@@ -104,7 +104,15 @@
   .navi svg { color: var(--drawer-text-mute); flex: 0 0 auto; }
   .navi.active svg { color: var(--drawer-text); }
   .nav-sep { font-size: 10.5px; opacity: .42; padding: 15px 14px 6px; letter-spacing: .1em; }
-  .sidebar .foot { padding: 15px 20px; font-size: 11px; opacity: .42; border-top: 1px solid var(--drawer-hover); }
+  .sidebar .foot { padding: 15px 20px; font-size: 11px; border-top: 1px solid var(--drawer-hover); }
+  .sidebar .foot .data-actions { display:flex; gap:8px; margin-bottom:10px; }
+  .sidebar .foot .data-btn {
+    flex:1; padding:7px 10px; border-radius:8px; border:1px solid var(--drawer-hover);
+    background: rgba(255,255,255,0.06); color: var(--drawer-text); font-size:12px; font-weight:600;
+    cursor:pointer; transition: all 0.2s;
+  }
+  .sidebar .foot .data-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+  .sidebar .foot .foot-tip { font-size:10.5px; opacity:0.5; text-align:center; }
 
   /* ---------- main ---------- */
   .main { margin-left: var(--sidebar-w); padding: 26px 34px 48px; }
@@ -652,8 +660,42 @@
     .rec.rec-todo .todo-actions { flex-wrap: wrap; }
     .rec.rec-todo .todo-btn { font-size: 12px; padding: 5px 10px; }
     .hero-banner { min-height: 150px; }
+    .clock-card { padding: 18px 20px; min-height: 160px; }
+    .clock-card .hi { font-size: 20px; }
+    .clock-card .sub { font-size: 11px; max-width: 100%; }
     .clock-card .clk { font-size: 28px !important; }
+    .clock-card .cmeta { font-size: 10.5px; flex-wrap: wrap; gap: 6px; }
+    .clock-card .cmeta .dot { display: none; }
     .report-panel textarea { font-size: 13px; }
+    /* bento grid mobile */
+    .bento { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .b3 { grid-column: span 6; }
+    .b4 { grid-column: span 6; }
+    .b5 { grid-column: span 6; }
+    .b6 { grid-column: span 6; }
+    .b7 { grid-column: span 6; }
+    .b8 { grid-column: span 6; }
+    .b12 { grid-column: span 6; }
+    /* overview tile mobile: stack rings above side card */
+    .ov2-body { grid-template-columns: 1fr; gap: 14px; }
+    .ov2-side { padding: 16px; }
+    .ov2-stat .s-v { font-size: 20px; }
+    .rings { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+    .ring { padding: 10px 5px; }
+    .ring .dial { width: 64px; height: 64px; }
+    .ring .pct { font-size: 16px; }
+    .ring .lbl { font-size: 11px; }
+    .ring .sub { font-size: 10px; }
+    /* module layout: single column on mobile */
+    .mod-layout { grid-template-columns: 1fr; gap: 10px; }
+    .mod-summary { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .pin-list { grid-template-columns: 1fr; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .g-main { grid-template-columns: 1fr; }
+    .tile-h { padding: 12px 14px 8px; }
+    .tile-h .zh { font-size: 15px; }
+    .tile-h .r { font-size: 10.5px; }
   }
 </style>
 <style>.trae-browser-inspect-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:999997;pointer-events:auto;background:rgba(0,0,0,0)}.trae-browser-inspect-highlight-box{position:absolute;top:0;left:0;z-index:999998;display:none}.trae-browser-inspect-highlight-tag{position:absolute;left:0px;top:0px;height:18px;padding:0 6px;box-sizing:border-box;border-radius:4px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:12px;font-weight:400;display:none;align-items:center;z-index:999999}.trae-browser-inspect-highlight-box-show{display:flex}.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show{display:flex !important}.trae-browser-inspect-select-button{position:absolute;top:0;left:0;background-color:var(--vscode-icube--bg-bg-base-secondary, "#222427");color:var(--vscode-icube--text-text-default-active, "#F5F9FE");font-size:11px;font-weight:500;border:1px solid var(--vscode-icube--border-neutral-l1, "#E0E2F217");border-radius:6px;padding:0 8px;height:32px;display:none;align-items:center;cursor:pointer;z-index:999999;gap:4px}.trae-browser-inspect-select-button svg,.trae-browser-inspect-select-button span{z-index:1}.trae-browser-inspect-select-highlight-box{background:rgba(0,0,0,0) !important}.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag{background-color:var(--vscode-icube--status-success-active, "#1E8B56")}.trae-browser-inspect-comment-card-container{position:fixed;top:0;left:0;z-index:9999999;pointer-events:auto}.trae-browser-inspect-comment-card-container .trae-browser-inspect-comment-card{display:flex;padding-top:0px !important;align-items:center;z-index:9999999 !important;background-color:var(--vscode-icube--bg-bg-menu)}*[contenteditable]{outline:none}.trae-browser-inspect-click-effect{position:fixed;width:40px;height:40px;margin-left:-20px;margin-top:-20px;border-radius:50%;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);pointer-events:none;animation:trae-browser-inspect-ripple 500ms ease-out forwards;z-index:999999}@keyframes trae-browser-inspect-ripple{0%{transform:scale(0.3);opacity:.8}100%{transform:scale(2);opacity:0}}.trae-browser-inspect-ref-box{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");pointer-events:none;z-index:999998;animation:trae-browser-inspect-fadeInOut 2s ease-in-out forwards}.trae-browser-inspect-ref-label{position:absolute;top:-14px;left:0;height:14px;padding:0 4px;box-sizing:border-box;border-radius:2px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:9px;font-weight:500;display:flex;align-items:center;white-space:nowrap;z-index:999999}@keyframes trae-browser-inspect-fadeInOut{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}.trae-browser-inspect-input-highlight{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");border-radius:4px;pointer-events:none;z-index:999998;box-shadow:0 0 8px var(--vscode-icube-colorSuccessHover, "#2FB287");animation:trae-browser-inspect-input-pulse 600ms ease-out forwards}@keyframes trae-browser-inspect-input-pulse{0%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}30%{opacity:1;box-shadow:0 0 12px var(--vscode-icube-colorSuccessHover, "#2FB287")}100%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}}.trae-browser-inspect-virtual-cursor{position:fixed;width:20px;height:20px;pointer-events:none;z-index:9999999;opacity:0;transition:opacity .2s ease}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-visible{opacity:1}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-idle{animation:trae-browser-inspect-cursor-breathe 2s ease-in-out infinite}.trae-browser-inspect-virtual-cursor svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))}@keyframes trae-browser-inspect-cursor-breathe{0%,100%{opacity:.7}50%{opacity:1}}.trae-browser-inspect-scroll-indicator{position:fixed;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;background-color:rgba(0,0,0,.7);color:#fff;font-size:13px;font-weight:500;pointer-events:none;z-index:999999;animation:trae-browser-inspect-indicator-fade 800ms ease-out forwards;backdrop-filter:blur(4px)}.trae-browser-inspect-scroll-indicator svg{width:16px;height:16px;fill:#fff}.trae-browser-inspect-scroll-indicator.trae-scroll-up{top:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-down{bottom:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-left{left:12px;top:50%;transform:translateY(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-right{right:12px;top:50%;transform:translateY(-50%)}@keyframes trae-browser-inspect-indicator-fade{0%{opacity:0;transform:translateX(-50%) scale(0.9)}15%{opacity:1;transform:translateX(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-scroll-indicator.trae-scroll-left,.trae-browser-inspect-scroll-indicator.trae-scroll-right{animation-name:trae-browser-inspect-indicator-fade-y}@keyframes trae-browser-inspect-indicator-fade-y{0%{opacity:0;transform:translateY(-50%) scale(0.9)}15%{opacity:1;transform:translateY(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-key-badge{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:8px;background-color:rgba(0,0,0,.8);color:#fff;font-size:18px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,monospace;pointer-events:none;z-index:999999;animation:trae-browser-inspect-key-pop 500ms ease-out forwards;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);box-shadow:0 4px 12px rgba(0,0,0,.3);letter-spacing:1px}@keyframes trae-browser-inspect-key-pop{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(0.9)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}.trae-browser-inspect-step-badge{position:fixed;top:12px;left:12px;padding:6px 12px;border-radius:6px;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);color:#fff;font-size:12px;font-weight:600;pointer-events:none;z-index:999999;animation:trae-browser-inspect-step-slide 600ms ease-out forwards;box-shadow:0 2px 8px rgba(47,178,135,.3);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trae-browser-inspect-step-badge.trae-step-old{opacity:.4;transform:translateY(0)}@keyframes trae-browser-inspect-step-slide{0%{opacity:0;transform:translateX(-20px)}20%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(0)}}.trae-browser-inspect-drag-trail{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999998}.trae-browser-inspect-drag-trail svg{width:100%;height:100%}.trae-browser-inspect-drag-trail .trae-drag-path{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;stroke-dasharray:8 4;opacity:.6;animation:trae-browser-inspect-dash 600ms linear forwards}.trae-browser-inspect-drag-trail .trae-drag-dot{fill:var(--vscode-icube-colorSuccessHover, #2FB287);filter:drop-shadow(0 0 4px rgba(47, 178, 135, 0.6))}.trae-browser-inspect-drag-trail .trae-drag-endpoint{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;opacity:.5}@keyframes trae-browser-inspect-dash{0%{stroke-dashoffset:200}100%{stroke-dashoffset:0}}.trae-browser-inspect-drag-trail.trae-drag-fade{animation:trae-browser-inspect-trail-fade 400ms ease-out forwards}@keyframes trae-browser-inspect-trail-fade{0%{opacity:1}100%{opacity:0}}</style><script type="module">(async () => {
@@ -2573,7 +2615,14 @@
       <div><h1 id="brandName">时序躬记</h1><p id="brandSlogan">任务 · 周报 · 报表，工作更有条理</p></div>
     </div>
     <nav class="nav" id="nav"><div class="navi active" data-go="home"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 5l8 6.5"></path><path d="M6 10.5V19h12v-8.5"></path></svg>首页</div><div class="nav-sep">功能模块</div><div class="navi" data-go="todo"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 6h11"></path><path d="M8.5 12h11"></path><path d="M8.5 18h11"></path><circle cx="4.5" cy="6" r=".9"></circle><circle cx="4.5" cy="12" r=".9"></circle><circle cx="4.5" cy="18" r=".9"></circle></svg>任务管理</div><div class="navi" data-go="checkin"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C10 4 4 9 4 17c0 1 .1 2 .5 3 5.5-9 9-9.5 15.5-16z"></path><path d="M4.5 20c3-6 7-9.5 13-11.5"></path></svg>每日打卡</div><div class="navi" data-go="report"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v14H7.5A2.5 2.5 0 0 0 5 19.5z"></path><path d="M5 19.5A2.5 2.5 0 0 1 7.5 17H19v4H7.5A2.5 2.5 0 0 1 5 19.5z"></path></svg>日报周报</div><div class="navi" data-go="idea"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h5l-1 8 8-11h-5z"></path></svg>灵光闪现</div><div class="navi" data-go="stats"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"></path><path d="M4 20h16"></path><path d="M8 16v-4"></path><path d="M12 16v-7"></path><path d="M16 16v-2"></path></svg>数据报表</div><div class="nav-sep">统计</div><div class="navi" data-go="insight"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"></path><path d="M4 20h16"></path><path d="M8 16v-4"></path><path d="M12 16v-7"></path><path d="M16 16v-2"></path></svg>洞察复盘</div></nav>
-    <div class="foot" id="foot">数据仅存在本机 · 每日更新</div>
+    <div class="foot" id="foot">
+      <div class="data-actions">
+        <button class="data-btn" id="btnExport">导出数据</button>
+        <button class="data-btn" id="btnImport">导入数据</button>
+        <input type="file" id="importFile" accept=".json" hidden/>
+      </div>
+      <div class="foot-tip">数据存在本机 IndexedDB · 可导出为文件备份</div>
+    </div>
   </aside>
   <!-- main -->
   <main class="main"><div id="screen">
@@ -2581,7 +2630,7 @@
     <div class="bento">
       <div class="clock-card b4">
     <div><div class="hi">晚上好，陛下</div><div class="sub">坚持到一半时最难，也最值得。</div></div>
-    <div><div class="clk" id="clk">20:05:54</div>
+    <div><div class="clk" id="clk">20:15:09</div>
       <div class="cmeta"><span>2026年8月20日 周四</span><span class="dot"></span><span>第 34 周</span></div></div></div>
       <div class="tile b4"><div class="tile-h"><span class="tic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.3 5.8.85-4.2 4.1 1 5.8L12 16.9l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85z"></path></svg></span><div class="tt"><span class="en">TODAY'S FOCUS</span><span class="zh">今日聚焦</span></div><span class="r">0 项</span></div>
     <div class="focus-list"><div class="focus-empty">在任意模块点击 <span style="display:inline-flex;color:var(--module-3);vertical-align:-2px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.3 5.8.85-4.2 4.1 1 5.8L12 16.9l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85z"></path></svg></span> 即可把要事置顶到这里。</div></div></div>
@@ -2792,15 +2841,88 @@ function avgProgress(list){
 const modOf = k => CONFIG.modules.find(m=>m.key===k);
 const $ = s => document.querySelector(s);
 
+/* ---------- IndexedDB storage (更持久，不被当缓存清理) ---------- */
+const DB_NAME = "shixu_gongji_db";
+const DB_VERSION = 1;
+const STORE_NAME = "appdata";
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); };
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+
+function dbGet(){
+  return new Promise(async(resolve,reject)=>{
+    try{ const db=await openDB();
+      const tx=db.transaction(STORE_NAME,"readonly");
+      const req=tx.objectStore(STORE_NAME).get("main");
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    } catch(e){ reject(e); }
+  });
+}
+
+function dbPut(val){
+  return new Promise(async(resolve,reject)=>{
+    try{ const db=await openDB();
+      const tx=db.transaction(STORE_NAME,"readwrite");
+      const req=tx.objectStore(STORE_NAME).put(val,"main");
+      req.onsuccess=()=>resolve();
+      req.onerror=()=>reject(req.error);
+    } catch(e){ reject(e); }
+  });
+}
+
 const store = {
-  load(){
-    const raw = localStorage.getItem(CONFIG.storageKey);
-    if(raw){ try { return JSON.parse(raw); } catch(e){} }
+  async load(){
+    try{
+      const raw=await dbGet();
+      if(raw!=null){ return typeof raw==="string"?JSON.parse(raw):raw; }
+    } catch(e){ console.warn("IndexedDB load failed, fallback to localStorage",e); }
+    // fallback: try localStorage for migration
+    const raw=localStorage.getItem(CONFIG.storageKey);
+    if(raw){ try{ const d=JSON.parse(raw); await dbPut(d); return d; } catch(e){} }
     const d={}; CONFIG.modules.forEach(m=>d[m.key]=structuredClone(m.seed||[])); return d;
   },
-  save(){ localStorage.setItem(CONFIG.storageKey, JSON.stringify(data)); },
+  async save(){
+    try{ await dbPut(data); }
+    catch(e){ console.warn("IndexedDB save failed, fallback to localStorage",e); localStorage.setItem(CONFIG.storageKey, JSON.stringify(data)); }
+  },
+  /* 导出数据为 JSON 文件 */
+  exportData(){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const d=new Date(); const ds=`${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+    a.href=url; a.download=`时序躬记-数据-${ds}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  },
+  /* 从 JSON 文件导入数据 */
+  importData(file){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=async e=>{
+        try{
+          const imported=JSON.parse(e.target.result);
+          if(typeof imported!=="object"||imported===null) throw new Error("文件格式错误");
+          data=imported;
+          await store.save();
+          render();
+          resolve();
+        } catch(err){ reject(err); }
+      };
+      reader.onerror=()=>reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
 };
-let data = store.load();
+
+let data = null;
 let view = "home";
 let searchQ = "";
 let reportTab = "daily";
@@ -3837,19 +3959,44 @@ $("#avatarInput").onchange = e => {
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function attr(s){ return esc(s).replace(/"/g,'&quot;'); }
 
-buildNav();
-render();
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
-}
-// mobile menu toggle
-(function(){
+/* ---------- 初始化：异步加载数据 ---------- */
+async function init(){
+  data = await store.load();
+  buildNav();
+  render();
+  // service worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  // mobile menu toggle
   const btn=document.getElementById('mobileMenuBtn');
   const sidebar=document.getElementById('sidebar');
   const overlay=document.getElementById('sidebarOverlay');
   if(btn) btn.onclick=()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('show'); };
   if(overlay) overlay.onclick=()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); };
-})();
+  // 导出数据
+  const expBtn=document.getElementById('btnExport');
+  if(expBtn) expBtn.onclick=()=>{ store.exportData(); };
+  // 导入数据
+  const impBtn=document.getElementById('btnImport');
+  const impFile=document.getElementById('importFile');
+  if(impBtn&&impFile){
+    impBtn.onclick=()=>impFile.click();
+    impFile.onchange=async e=>{
+      const file=e.target.files[0];
+      if(!file) return;
+      if(!confirm("导入数据将覆盖当前所有数据，确定继续吗？")){ impFile.value=''; return; }
+      try{
+        await store.importData(file);
+        alert("导入成功！");
+      } catch(err){
+        alert("导入失败："+err.message);
+      }
+      impFile.value='';
+    };
+  }
+}
+init();
 </script>
 
 
