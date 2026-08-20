@@ -523,6 +523,29 @@
   .clock-card .cmeta { display:flex; align-items:center; gap:10px; margin-top:9px; font-size:12px; opacity:.6; }
   .clock-card .cmeta .dot { width:4px; height:4px; border-radius:50%; background:currentColor; }
 
+  /* 积分卡 */
+  .points-card { position:relative; overflow:hidden; border-radius:var(--radius-sheet);
+    background:linear-gradient(140deg,#3d2e18 0%,#2e2110 60%,#1f170a 100%); color:#f5e6c8;
+    padding:26px 28px; box-shadow:var(--shadow-overlay); display:flex; flex-direction:column; justify-content:space-between; min-height:196px; }
+  .points-card::before { content:""; position:absolute; width:200px; height:200px; border-radius:50%; right:-50px; top:-70px;
+    background:radial-gradient(circle,rgba(218,165,72,.4),transparent 70%); }
+  .points-card::after { content:""; position:absolute; width:140px; height:140px; border-radius:50%; left:-40px; bottom:-60px;
+    background:radial-gradient(circle,rgba(180,120,60,.3),transparent 70%); }
+  .points-card > * { position:relative; z-index:1; }
+  .points-card .pt-hd { font-size:15px; font-weight:700; opacity:.85; display:flex; align-items:center; gap:8px; }
+  .points-card .pt-hd .coin { width:22px; height:22px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffe58a,#d4a02e 60%,#8b6510);
+    box-shadow:0 2px 8px rgba(218,165,72,.4), inset 0 -2px 4px rgba(0,0,0,.2); }
+  .points-card .pt-num { font-size:clamp(42px,5vw,56px); font-weight:900; letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums; line-height:1;
+    background:linear-gradient(135deg,#ffe58a 0%,#f5c74b 50%,#d49a1e 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    text-shadow:0 2px 20px rgba(218,165,72,.3); }
+  .points-card .pt-sub { font-size:12px; opacity:.65; margin-top:6px; }
+  .points-card .pt-breakdown { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+  .points-card .pt-item { font-size:11px; opacity:.75; display:flex; align-items:center; gap:4px; }
+  .points-card .pt-item .pv { font-weight:700; color:#ffd666; }
+
   /* 焦点/统计瓷砖 */
   .focus-list { display:flex; flex-direction:column; gap:9px; }
   .focus-row { display:flex; align-items:center; gap:11px; }
@@ -2951,6 +2974,48 @@ function weekDates(){
 function weekNum(){ const n=new Date(); const s=new Date(n.getFullYear(),0,1);
   return Math.ceil(((n-s)/86400000 + s.getDay()+1)/7); }
 
+/* ---------- 积分系统 ---------- */
+const POINT_RULES = {
+  todoDone: 20,     // 完成一个任务
+  checkinItem: 2,   // 每天打卡一个项目
+  weeklyReport: 10, // 写周报
+  idea: 5,          // 写一个灵感
+  pomodoro: 5,      // 完成一个番茄钟
+};
+
+function calcPoints(){
+  if(!data) return { total:0, breakdown:{} };
+  // 任务完成
+  const todoDone = (data.todo||[]).filter(t=>t.done).length;
+  const todoPts = todoDone * POINT_RULES.todoDone;
+  // 打卡：统计所有打卡项的所有打卡天数
+  let checkinCount = 0;
+  (data.checkin||[]).forEach(c=>{
+    if(c.log) checkinCount += Object.keys(c.log).length;
+  });
+  const checkinPts = checkinCount * POINT_RULES.checkinItem;
+  // 周报
+  const weeklyCount = (data.report||[]).filter(r=>r.mood==="周报").length;
+  const weeklyPts = weeklyCount * POINT_RULES.weeklyReport;
+  // 灵感
+  const ideaCount = (data.idea||[]).length;
+  const ideaPts = ideaCount * POINT_RULES.idea;
+  // 番茄钟
+  const pomoCount = (data.__pomo && data.__pomo.count) || 0;
+  const pomoPts = pomoCount * POINT_RULES.pomodoro;
+  const total = todoPts + checkinPts + weeklyPts + ideaPts + pomoPts;
+  return {
+    total,
+    breakdown: {
+      todo: { count: todoDone, pts: todoPts, label: "完成任务", rule: POINT_RULES.todoDone + "分/个" },
+      checkin: { count: checkinCount, pts: checkinPts, label: "打卡次数", rule: POINT_RULES.checkinItem + "分/次" },
+      weekly: { count: weeklyCount, pts: weeklyPts, label: "周报篇数", rule: POINT_RULES.weeklyReport + "分/篇" },
+      idea: { count: ideaCount, pts: ideaPts, label: "灵感条数", rule: POINT_RULES.idea + "分/条" },
+      pomodoro: { count: pomoCount, pts: pomoPts, label: "番茄钟", rule: POINT_RULES.pomodoro + "分/个" },
+    }
+  };
+}
+
 /* 秒级心跳：更新时钟；番茄钟运行时倒计时 */
 function startClock(){ if(clockTimer) return; clockTimer=setInterval(heartbeat,1000); heartbeat(); }
 function heartbeat(){
@@ -3171,10 +3236,27 @@ function renderHome(){
     <div><div class="clk" id="clk">${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}</div>
       <div class="cmeta"><span>${dateStr()}</span><span class="dot"></span><span>第 ${weekNum()} 周</span></div></div></div>`;
 
+  // 积分卡
+  const pts = calcPoints();
+  const ptsCard=`<div class="points-card b3">
+    <div class="pt-hd"><span class="coin"></span>累计积分</div>
+    <div>
+      <div class="pt-num">${pts.total.toLocaleString()}</div>
+      <div class="pt-sub">继续努力，积跬步以至千里</div>
+      <div class="pt-breakdown">
+        <span class="pt-item"><span class="pv">${pts.breakdown.todo.pts}</span>任务</span>
+        <span class="pt-item"><span class="pv">${pts.breakdown.checkin.pts}</span>打卡</span>
+        <span class="pt-item"><span class="pv">${pts.breakdown.weekly.pts}</span>周报</span>
+        <span class="pt-item"><span class="pv">${pts.breakdown.idea.pts}</span>灵感</span>
+        <span class="pt-item"><span class="pv">${pts.breakdown.pomodoro.pts}</span>番茄</span>
+      </div>
+    </div></div>`;
+
   $("#screen").innerHTML = `
     ${grp("今日节奏","TODAY&nbsp;&nbsp;·&nbsp;&nbsp;RHYTHM")}
     <div class="bento">
       ${clockCard}
+      ${ptsCard}
       ${focusTileHTML()}
       ${quickTileHTML()}
       ${overviewTileHTML()}
@@ -3943,8 +4025,10 @@ function buildNav(){
 function renderNavActive(){ $("#nav").querySelectorAll(".navi").forEach(el=>el.classList.toggle("active", el.dataset.go===view)); }
 
 /* ---------- avatar upload ---------- */
-$("#avaCam").innerHTML = icon("camera",18);
-if(data.__avatar) $("#avaImg").src = data.__avatar;
+function initAvatar(){
+  $("#avaCam").innerHTML = icon("camera",18);
+  if(data && data.__avatar) $("#avaImg").src = data.__avatar;
+}
 $("#ava").onclick = () => $("#avatarInput").click();
 $("#avatarInput").onchange = e => {
   const f = e.target.files && e.target.files[0];
@@ -3963,6 +4047,7 @@ function attr(s){ return esc(s).replace(/"/g,'&quot;'); }
 async function init(){
   data = await store.load();
   buildNav();
+  initAvatar();
   render();
   // service worker
   if ("serviceWorker" in navigator) {
