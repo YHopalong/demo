@@ -627,26 +627,27 @@
   .tk-name { flex:1; min-width:0; font-size:13.5px; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tk-name.done { text-decoration:line-through; color:var(--text-secondary); }
 
-  /* 番茄钟（暗色炫酷卡） */
+  /* 外部番茄钟入口卡（暗色） */
   .pomo { position:relative; overflow:hidden; border-radius:var(--radius-card); text-align:center;
-    background:linear-gradient(155deg,#302f2c,#1e1d1b); color:#f4f3f0; padding:22px 20px; box-shadow:var(--shadow-overlay);
-    display:flex; flex-direction:column; }
-  .pomo::before { content:""; position:absolute; width:180px; height:180px; border-radius:50%; left:50%; top:-60px; transform:translateX(-50%);
-    background:radial-gradient(circle,rgba(197,93,79,.28),transparent 70%); }
+    background:linear-gradient(155deg,#302f2c,#1e1d1b); color:#f4f3f0; padding:24px 22px; box-shadow:var(--shadow-overlay);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+  .pomo::before { content:""; position:absolute; width:200px; height:200px; border-radius:50%; left:50%; top:-70px; transform:translateX(-50%);
+    background:radial-gradient(circle,rgba(197,93,79,.22),transparent 70%); }
   .pomo > * { position:relative; z-index:1; }
-  .pomo .pen { font-size:9.5px; font-weight:800; letter-spacing:.16em; opacity:.55; }
-  .pomo .pzh { font-size:13px; font-weight:800; margin-top:3px; }
-  .pomo .ring-wrap { position:relative; width:150px; height:150px; margin:14px auto 12px; }
-  .pomo .ring-wrap svg { transform:rotate(-90deg); }
-  .pomo .ptime { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; }
-  .pomo .ptime .t { font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.01em; }
-  .pomo .ptime .s { font-size:11px; opacity:.6; }
-  .pomo .pctl { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
-  .pomo .pctl button { border:1px solid rgba(244,243,240,.22); background:rgba(244,243,240,.08); color:#f4f3f0;
-    border-radius:9px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; }
-  .pomo .pctl button:hover { background:rgba(244,243,240,.16); }
-  .pomo .pctl button.primary { background:#f4f3f0; color:#232220; border-color:#f4f3f0; }
-  .pomo .pstats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .pomo .papp-icon { width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,#e8a060,#c56a4f);
+    display:grid; place-items:center; box-shadow:0 4px 16px rgba(197,93,79,.4); }
+  .pomo .papp-icon svg { color:#fff; }
+  .pomo .papp-name { font-size:16px; font-weight:800; }
+  .pomo .papp-sub { font-size:11px; opacity:.55; margin-top:2px; }
+  .pomo .papp-btn { display:inline-flex; align-items:center; gap:7px; padding:11px 24px; border-radius:11px;
+    background:#f4f3f0; color:#232220; font-size:14px; font-weight:800; cursor:pointer; border:none;
+    transition: all .15s; text-decoration:none; -webkit-tap-highlight-color:transparent; }
+  .pomo .papp-btn:active { transform:scale(.96); }
+  .pomo .papp-log { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:10px;
+    border:1px solid rgba(244,243,240,.25); background:rgba(244,243,240,.08); color:#f4f3f0;
+    font-size:12.5px; font-weight:700; cursor:pointer; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+  .pomo .papp-log:active { background:rgba(244,243,240,.18); }
+  .pomo .pstats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; margin-top:4px; }
   .pomo .pstats .ps { background:rgba(244,243,240,.06); border-radius:10px; padding:9px 4px; }
   .pomo .pstats .pv { font-size:18px; font-weight:800; letter-spacing:-.02em; }
   .pomo .pstats .pl { font-size:10.5px; opacity:.55; margin-top:2px; }
@@ -2880,6 +2881,8 @@ const ICONS = {
   'file-text':'<path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M8 13h8M8 17h8M8 9h2"/>',
   archive:'<rect x="3" y="5" width="18" height="4" rx="1.5"/><path d="M5 9v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/>',
   'chevron-left':'<path d="M15 5l-7 7 7 7"/>',
+  'timer':'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/>',
+  'external-link':'<path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
 };
 function icon(name, size=22, sw=1.7){
   const path = ICONS[name] || ICONS.grid;
@@ -3052,22 +3055,10 @@ function calcPoints(){
   };
 }
 
-/* 秒级心跳：更新时钟；番茄钟运行时倒计时 */
+/* 秒级心跳：更新时钟 */
 function startClock(){ if(clockTimer) return; clockTimer=setInterval(heartbeat,1000); heartbeat(); }
 function heartbeat(){
   const el=$("#clk"); if(el){ const n=new Date(); el.textContent=`${pad2(n.getHours())}:${pad2(n.getMinutes())}:${pad2(n.getSeconds())}`; }
-  if(pomo.running){ pomo.remain--; if(pomo.remain<=0) completePomo(); pomoUpdate(); }
-}
-function pomoUpdate(){
-  const t=$("#pomo-time"); if(t){ t.textContent=`${pad2(Math.floor(pomo.remain/60))}:${pad2(pomo.remain%60)}`; }
-  const fg=$("#pomo-fg"); if(fg){ const r=64,c=2*Math.PI*r; fg.style.strokeDashoffset=c*(1-pomo.remain/pomo.total); }
-  const st=$("#pomo-status"); if(st) st.textContent=pomo.running?"专注中":"已暂停";
-  const b=$("#pomo-toggle"); if(b) b.textContent=pomo.running?"暂停":"开始";
-}
-function completePomo(){ pomo.running=false; pomo.remain=pomo.total;
-  data.__pomo=data.__pomo||{count:0,min:0}; data.__pomo.count++; data.__pomo.min+=Math.round(pomo.total/60); store.save();
-  const c=$("#pomo-count"); if(c) c.textContent=data.__pomo.count;
-  const mn=$("#pomo-min"); if(mn) mn.textContent=data.__pomo.min;
 }
 
 /* ---------- ring svg ---------- */
@@ -3185,20 +3176,21 @@ function todoTileHTML(){
     <div class="tk-list">${list}</div></div>`;
 }
 
-/* 专注番茄钟（暗色炫酷卡 · 实时倒计时） */
+/* 外部番茄钟入口卡（小鸡专注） */
 function pomoTileHTML(){
   const p=data.__pomo||{count:0,min:0};
-  const r=64,c=2*Math.PI*r,off=c*(1-pomo.remain/pomo.total);
-  return `<div class="pomo b4"><div><div class="pen">POMODORO · 25 / 5</div><div class="pzh">专注番茄钟</div></div>
-    <div class="ring-wrap"><svg width="150" height="150" viewBox="0 0 150 150">
-      <circle cx="75" cy="75" r="${r}" fill="none" stroke="rgba(244,243,240,.14)" stroke-width="7"/>
-      <circle id="pomo-fg" cx="75" cy="75" r="${r}" fill="none" stroke="#e6b877" stroke-width="7" stroke-linecap="round"
-        stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg>
-      <div class="ptime"><span class="t" id="pomo-time">${pad2(Math.floor(pomo.remain/60))}:${pad2(pomo.remain%60)}</span><span class="s" id="pomo-status">${pomo.running?'专注中':'保持专注'}</span></div></div>
-    <div class="pctl"><button class="primary" id="pomo-toggle">${pomo.running?'暂停':'开始'}</button><button id="pomo-reset">重置</button></div>
-    <div class="pstats"><div class="ps"><div class="pv" id="pomo-count">${p.count}</div><div class="pl">今日番茄</div></div>
+  const APPSTORE_URL="https://apps.apple.com/cn/app/id1627691759";
+  return `<div class="pomo b4">
+    <div class="papp-icon">${icon("timer",28)}</div>
+    <div>
+      <div class="papp-name">小鸡专注</div>
+      <div class="papp-sub">番茄钟 · 自律学习计时器</div>
+    </div>
+    <a class="papp-btn" id="pomo-open" href="${APPSTORE_URL}" target="_blank" rel="noopener">${icon("external-link",15)} 打开小鸡专注</a>
+    <button class="papp-log" id="pomo-log">${icon("plus",14,2.2)} 记录完成一个番茄钟</button>
+    <div class="pstats"><div class="ps"><div class="pv" id="pomo-count">${p.count}</div><div class="pl">累计番茄</div></div>
       <div class="ps"><div class="pv" id="pomo-min">${p.min}</div><div class="pl">专注分钟</div></div>
-      <div class="ps"><div class="pv">${p.count+ (pomo.running?1:0)}</div><div class="pl">轮次</div></div></div></div>`;
+      <div class="ps"><div class="pv">${p.count*5}</div><div class="pl">累计积分</div></div></div></div>`;
 }
 
 /* 心情趋势折线（复用 trend） */
@@ -3329,9 +3321,16 @@ function wireHome(){
     e.stopPropagation(); const x=(data.checkin||[]).find(i=>i.id==el.dataset.id); if(!x) return;
     const d=el.dataset.day; x.log=x.log||{}; x.log[d]?delete x.log[d]:x.log[d]=true; persist();
   });
-  // 番茄钟控制
-  const tg=$("#pomo-toggle"); if(tg) tg.onclick=()=>{ pomo.running=!pomo.running; pomoUpdate(); };
-  const rs=$("#pomo-reset"); if(rs) rs.onclick=()=>{ pomo.running=false; pomo.remain=pomo.total; pomoUpdate(); };
+  // 番茄钟：记录完成
+  const pl=$("#pomo-log"); if(pl) pl.onclick=()=>{
+    data.__pomo=data.__pomo||{count:0,min:0};
+    data.__pomo.count++; data.__pomo.min+=25;
+    store.save();
+    const c=$("#pomo-count"); if(c) c.textContent=data.__pomo.count;
+    const m=$("#pomo-min"); if(m) m.textContent=data.__pomo.min;
+    pl.innerHTML=icon("check",14,2.2)+" 已记录 +5分";
+    setTimeout(()=>{ pl.innerHTML=icon("plus",14,2.2)+" 记录完成一个番茄钟"; },2000);
+  };
 }
 
 /* ---------- INSIGHT ---------- */
