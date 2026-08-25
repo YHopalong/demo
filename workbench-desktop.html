@@ -2883,6 +2883,7 @@ const ICONS = {
   'chevron-left':'<path d="M15 5l-7 7 7 7"/>',
   'timer':'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/>',
   'external-link':'<path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  'download':'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
 };
 function icon(name, size=22, sw=1.7){
   const path = ICONS[name] || ICONS.grid;
@@ -3695,10 +3696,11 @@ function renderModule(key){
   const body = it.length ? it.map(x=>recHTML(m,x)).join("")
     : `<div class="empty"><span class="e">${icon(m.icon,28)}</span><div>${q?'没有匹配的记录':'还没有记录，点右上角「新建」添加第一条吧'}</div></div>`;
 
+  const exportBtn = key==="idea" ? `<button class="btn" id="btn-export">${icon("download",16,2.2)}导出全部</button>` : "";
   $("#screen").innerHTML=`<div class="header"><div><h2>${m.name}</h2><p>${m.desc}</p></div><div class="spacer"></div><button class="back-home" id="back-home">${icon("home",14)}返回首页</button><span class="date-chip">${icon("calendar",14)} ${dateStr()}</span></div>
     <div class="toolbar">
       <div class="search-box">${icon("search",15,2.2)}<input id="search" placeholder="搜索…" value="${attr(searchQ)}"/></div>
-      <div class="spacer"></div><button class="btn" id="btn-new">${icon("plus",16,2.2)}新建</button></div>
+      <div class="spacer"></div>${exportBtn}<button class="btn" id="btn-new">${icon("plus",16,2.2)}新建</button></div>
     ${head}
     <div class="mod-layout">
       <div class="mod-main">
@@ -3714,6 +3716,26 @@ function renderModule(key){
   s.addEventListener("compositionend",()=>{ composing=false; refresh(); });
   s.addEventListener("input",()=>{ if(!composing) refresh(); });
   $("#btn-new").onclick=()=>openEditor(key,null);
+  const eb=$("#btn-export"); if(eb) eb.onclick=()=>{
+    const ideas=data.idea||[];
+    if(!ideas.length){ alert("暂无灵感记录可导出"); return; }
+    const lines=ideas.map((it,i)=>{
+      const date=it.date||"未标注";
+      const mood=it.mood||"待整理";
+      const title=it.title||"";
+      const content=it.content||"";
+      return `${i+1}. [${mood}] ${title}\n   日期：${date}\n   内容：${content}`;
+    });
+    const text=`时序躬记 · 灵光闪现导出\n导出时间：${dateStr()}\n共计 ${ideas.length} 条\n${"=".repeat(40)}\n\n${lines.join("\n\n")}`;
+    const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`灵光闪现-${isoToday()}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    eb.innerHTML=icon("check",16,2.2)+" 已导出";
+    setTimeout(()=>{ eb.innerHTML=icon("download",16,2.2)+"导出全部"; },2000);
+  };
   $("#back-home").onclick=()=>go("home");
   wireModule(key);
 }
