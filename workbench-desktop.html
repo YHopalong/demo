@@ -4219,7 +4219,20 @@ function confirmDelete(key,id){ const item=(data[key]||[]).find(i=>i.id==id); if
   const close=()=>overlay.remove();
   overlay.onclick=e=>{ if(e.target===overlay) close(); };
   overlay.querySelector("#c-cancel").onclick=close;
-  overlay.querySelector("#c-ok").onclick=()=>{ data[key]=data[key].filter(i=>i.id!=id); persist(); close(); };
+  overlay.querySelector("#c-ok").onclick=()=>{
+    data[key]=data[key].filter(i=>i.id!=id);
+    // 如果删除的是打卡项，清理关联任务的打卡链接
+    if(key==="checkin"&&item.linkedTodo!=null){
+      const todo=(data.todo||[]).find(i=>i.id==item.linkedTodo);
+      if(todo){ todo.linkedCheckin=null; todo.convertDate=null; todo.completion=null; }
+    }
+    // 如果删除的是任务，清理关联打卡项的任务链接
+    if(key==="todo"&&item.linkedCheckin!=null){
+      const ci=(data.checkin||[]).find(i=>i.id==item.linkedCheckin);
+      if(ci){ ci.linkedTodo=null; }
+    }
+    persist(); close();
+  };
 }
 
 /* ---------- router / sidebar ---------- */
