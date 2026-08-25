@@ -382,6 +382,8 @@
   .rec.rec-todo .days-left { position:absolute; right:16px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1; }
   .rec.rec-todo .days-left .dl-num { font-size:32px; font-weight:800; color:var(--danger); letter-spacing:-1px; }
   .rec.rec-todo .days-left .dl-label { font-size:10px; color:var(--danger); font-weight:600; margin-top:3px; opacity:0.8; }
+  .rec.rec-todo .todo-progress { height:6px; border-radius:999px; background:var(--border); overflow:hidden; margin-top:8px; }
+  .rec.rec-todo .todo-progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--module-3),var(--accent)); transition:width .3s; }
   .rec.rec-todo .days-left.overdue .dl-num { color:var(--danger); }
   .rec.rec-todo .days-left.overdue .dl-label { color:var(--danger); }
   .badge-linked { background:var(--accent-muted); color:var(--module-1); display:inline-flex; align-items:center; gap:3px; font-size:11.5px; font-weight:600; padding:3px 8px; border-radius:999px; }
@@ -2884,6 +2886,7 @@ const ICONS = {
   'timer':'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/>',
   'external-link':'<path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
   'download':'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+  'trending':'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
 };
 function icon(name, size=22, sw=1.7){
   const path = ICONS[name] || ICONS.grid;
@@ -3310,8 +3313,34 @@ function wireHome(){
   // 就地打卡 / 完成
   $("#screen").querySelectorAll(".js-pin-chk").forEach(el=>el.onclick=e=>{
     e.stopPropagation(); const m=modOf(el.dataset.mkey), x=find(el); if(!x) return;
-    if(m.type==="todo"){ x.done=!x.done; }
-    else if(m.type==="checkin"){ x.log=x.log||{}; const t=today(); x.log[t]?delete x.log[t]:x.log[t]=true; }
+    if(m.type==="todo"){
+      x.done=!x.done;
+      if(x.linkedCheckin!=null){
+        const ci=(data.checkin||[]).find(i=>i.id==x.linkedCheckin);
+        if(ci){ ci.log=ci.log||{}; const t=today(); if(x.done) ci.log[t]=true; else delete ci.log[t]; }
+      }
+    }
+    else if(m.type==="checkin"){
+      x.log=x.log||{}; const t=today(); x.log[t]?delete x.log[t]:x.log[t]=true;
+      if(x.linkedTodo!=null){
+        const todo=(data.todo||[]).find(i=>i.id==x.linkedTodo);
+        if(todo){
+          const checkedDays=countCheckinDays(x.log);
+          let totalDays=0;
+          if(todo.dueDate){
+            const start=new Date(todo.convertDate||todo.dueDate);
+            const end=new Date(todo.dueDate);
+            totalDays=Math.max(1,Math.round((end-start)/86400000)+1);
+          } else if(x.durationType==="fixed"&&x.fixedDays){
+            totalDays=x.fixedDays;
+          }
+          if(totalDays>0){
+            todo.completion=Math.min(100,Math.round(checkedDays/totalDays*100));
+            todo.done=todo.completion>=100;
+          }
+        }
+      }
+    }
     persist();
   });
   $("#screen").querySelectorAll(".js-pin-inc").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const x=find(el); if(!x) return; x.current=(+x.current||0)+1; persist(); });
@@ -3878,12 +3907,18 @@ function recHTML(m,x){
     const di=x.dueDate?dueInfo(x.dueDate):null;
     const proj=x.project||'';
     const linked=x.linkedCheckin!=null;
+    const compPct = linked && x.completion!=null ? Math.min(100, x.completion) : null;
     const actBtns = x.done
       ? `<button class="todo-btn undo js-chk" data-id="${x.id}">${icon("rotate-ccw",13,2.2)}撤销完成</button>`
-      : `<button class="todo-btn done js-chk" data-id="${x.id}">${icon("check",13,2.4)}标记完成</button>`;
+      : (linked && compPct!=null && compPct>0 && compPct<100)
+        ? `<span class="todo-btn" style="opacity:.6;cursor:default">${icon("trending",13,2)}完成度 ${compPct}%</span>`
+        : `<button class="todo-btn done js-chk" data-id="${x.id}">${icon("check",13,2.4)}标记完成</button>`;
     const convertBtn = linked
       ? `<span class="badge badge-linked">${icon("leaf",11,2.6)}已转打卡</span>`
       : `<button class="todo-btn convert js-convert" data-id="${x.id}">${icon("leaf",13,2)}转为每日打卡</button>`;
+    const progressBar = (linked && compPct!=null && compPct>0 && compPct<100)
+      ? `<div class="todo-progress"><div class="todo-progress-bar" style="width:${compPct}%"></div></div>`
+      : '';
     return `<div class="rec rec-todo ${layoutCls}">${acts}<div class="top" style="padding-right:60px"><div class="chk js-chk ${x.done?'on':''}" data-id="${x.id}">${chkMark}</div>
       ${thumb}
       <div class="body" data-edit="${x.id}"><span class="rname ${x.done?'done':''}">${esc(x.title)}</span>
@@ -3892,7 +3927,9 @@ function recHTML(m,x){
         ${p?`<span class="badge" style="background:${p.color};color:${p.text}">${p.label}</span>`:''}
         ${di?`<span class="todo-due ${di.cls}">${esc(x.dueDate)} · ${di.label}</span>`:''}
         ${x.done?`<span class="badge" style="background:var(--accent-muted);color:var(--module-1)">${icon("check",11,2.6)}已完成</span>`:''}
+        ${compPct!=null&&!x.done?`<span class="badge" style="background:#f0ede4;color:var(--module-3)">${icon("trending",11,2.6)}完成度 ${compPct}%</span>`:''}
       </div>
+      ${progressBar}
       ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
       ${customBlock}</div></div>
       ${di&&!x.done?`<div class="days-left ${di.cls==='overdue'?'overdue':''}"><span class="dl-num">${Math.abs(Math.round((new Date(x.dueDate)-new Date())/86400000))}</span><span class="dl-label">${di.cls==='overdue'?'逾期':'剩余'}<br/>${di.cls==='overdue'?'天':'天'}</span></div>`:''}
@@ -3971,7 +4008,26 @@ function wireModule(key){ const m=modOf(key);
       x.log=x.log||{}; const t=today(); x.log[t]?delete x.log[t]:x.log[t]=true;
       if(x.linkedTodo!=null){
         const todo=(data.todo||[]).find(i=>i.id==x.linkedTodo);
-        if(todo){ todo.done=!!x.log[t]; }
+        if(todo){
+          // 根据打卡天数和截止日期计算完成度
+          const ci=x;
+          const checkedDays=countCheckinDays(ci.log);
+          let totalDays=0;
+          if(todo.dueDate){
+            const start=new Date(todo.convertDate||todo.dueDate);
+            const end=new Date(todo.dueDate);
+            totalDays=Math.max(1,Math.round((end-start)/86400000)+1);
+          } else if(ci.durationType==="fixed"&&ci.fixedDays){
+            totalDays=ci.fixedDays;
+          } else {
+            totalDays=0; // 长期无截止，不自动完成
+          }
+          if(totalDays>0){
+            const pct=Math.min(100,Math.round(checkedDays/totalDays*100));
+            todo.completion=pct;
+            todo.done=pct>=100;
+          }
+        }
       }
     }
     persist(); });
@@ -3982,6 +4038,9 @@ function wireModule(key){ const m=modOf(key);
     const checkinItem={ id:Date.now(), title:todo.title, log:{}, linkedTodo:todo.id };
     (data.checkin=data.checkin||[]).unshift(checkinItem);
     todo.linkedCheckin=checkinItem.id;
+    todo.convertDate=isoToday();
+    todo.completion=0;
+    todo.done=false;
     store.save();
     go("checkin");
     setTimeout(()=>{
