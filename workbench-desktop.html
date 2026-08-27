@@ -382,8 +382,11 @@
   .rec.rec-todo .days-left { position:absolute; right:16px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1; }
   .rec.rec-todo .days-left .dl-num { font-size:32px; font-weight:800; color:var(--danger); letter-spacing:-1px; }
   .rec.rec-todo .days-left .dl-label { font-size:10px; color:var(--danger); font-weight:600; margin-top:3px; opacity:0.8; }
-  .rec.rec-todo .todo-progress { height:6px; border-radius:999px; background:var(--border); overflow:hidden; margin-top:8px; }
-  .rec.rec-todo .todo-progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--module-3),var(--accent)); transition:width .3s; }
+  .rec.rec-todo .todo-pie { position:absolute; right:12px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .rec.rec-todo .todo-pie svg { display:block; }
+  .rec.rec-todo .todo-pie-num { position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); font-size:15px; font-weight:800; color:var(--module-3); line-height:1; }
+  .rec.rec-todo .todo-pie-pct { font-size:9px; font-weight:700; opacity:.7; }
+  .rec.rec-todo .todo-pie-label { font-size:10px; color:var(--text-secondary); font-weight:600; margin-top:3px; }
   .rec.rec-todo .days-left.overdue .dl-num { color:var(--danger); }
   .rec.rec-todo .days-left.overdue .dl-label { color:var(--danger); }
   .badge-linked { background:var(--accent-muted); color:var(--module-1); display:inline-flex; align-items:center; gap:3px; font-size:11.5px; font-weight:600; padding:3px 8px; border-radius:999px; }
@@ -3908,18 +3911,32 @@ function recHTML(m,x){
     const proj=x.project||'';
     const linked=x.linkedCheckin!=null;
     const compPct = linked && x.completion!=null ? Math.min(100, x.completion) : null;
+    const hasProgress = linked && compPct!=null && compPct>0 && compPct<100;
     const actBtns = x.done
       ? `<button class="todo-btn undo js-chk" data-id="${x.id}">${icon("rotate-ccw",13,2.2)}撤销完成</button>`
-      : (linked && compPct!=null && compPct>0 && compPct<100)
-        ? `<span class="todo-btn" style="opacity:.6;cursor:default">${icon("trending",13,2)}完成度 ${compPct}%</span>`
+      : hasProgress
+        ? `<span class="todo-btn" style="opacity:.6;cursor:default">${icon("trending",13,2)}打卡推进中</span>`
         : `<button class="todo-btn done js-chk" data-id="${x.id}">${icon("check",13,2.4)}标记完成</button>`;
     const convertBtn = linked
       ? `<span class="badge badge-linked">${icon("leaf",11,2.6)}已转打卡</span>`
       : `<button class="todo-btn convert js-convert" data-id="${x.id}">${icon("leaf",13,2)}转为每日打卡</button>`;
-    const progressBar = (linked && compPct!=null && compPct>0 && compPct<100)
-      ? `<div class="todo-progress"><div class="todo-progress-bar" style="width:${compPct}%"></div></div>`
-      : '';
-    return `<div class="rec rec-todo ${layoutCls}">${acts}<div class="top" style="padding-right:60px"><div class="chk js-chk ${x.done?'on':''}" data-id="${x.id}">${chkMark}</div>
+    // 右侧：饼状图完成度 或 剩余天数
+    let rightSide='';
+    if(hasProgress){
+      const r=22,c=2*Math.PI*r,off=c*(1-compPct/100);
+      rightSide=`<div class="todo-pie">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="${r}" fill="none" stroke="var(--border)" stroke-width="5"/>
+          <circle cx="26" cy="26" r="${r}" fill="none" stroke="var(--module-3)" stroke-width="5" stroke-linecap="round"
+            stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 26 26)"/>
+        </svg>
+        <div class="todo-pie-num">${compPct}<span class="todo-pie-pct">%</span></div>
+        <div class="todo-pie-label">完成度</div>
+      </div>`;
+    } else if(di&&!x.done){
+      rightSide=`<div class="days-left ${di.cls==='overdue'?'overdue':''}"><span class="dl-num">${Math.abs(Math.round((new Date(x.dueDate)-new Date())/86400000))}</span><span class="dl-label">${di.cls==='overdue'?'逾期':'剩余'}<br/>${di.cls==='overdue'?'天':'天'}</span></div>`;
+    }
+    return `<div class="rec rec-todo ${layoutCls}">${acts}<div class="top" style="padding-right:70px"><div class="chk js-chk ${x.done?'on':''}" data-id="${x.id}">${chkMark}</div>
       ${thumb}
       <div class="body" data-edit="${x.id}"><span class="rname ${x.done?'done':''}">${esc(x.title)}</span>
       <div class="todo-meta">
@@ -3927,12 +3944,10 @@ function recHTML(m,x){
         ${p?`<span class="badge" style="background:${p.color};color:${p.text}">${p.label}</span>`:''}
         ${di?`<span class="todo-due ${di.cls}">${esc(x.dueDate)} · ${di.label}</span>`:''}
         ${x.done?`<span class="badge" style="background:var(--accent-muted);color:var(--module-1)">${icon("check",11,2.6)}已完成</span>`:''}
-        ${compPct!=null&&!x.done?`<span class="badge" style="background:#f0ede4;color:var(--module-3)">${icon("trending",11,2.6)}完成度 ${compPct}%</span>`:''}
       </div>
-      ${progressBar}
       ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
       ${customBlock}</div></div>
-      ${di&&!x.done?`<div class="days-left ${di.cls==='overdue'?'overdue':''}"><span class="dl-num">${Math.abs(Math.round((new Date(x.dueDate)-new Date())/86400000))}</span><span class="dl-label">${di.cls==='overdue'?'逾期':'剩余'}<br/>${di.cls==='overdue'?'天':'天'}</span></div>`:''}
+      ${rightSide}
       <div class="todo-actions">${actBtns}${convertBtn}<button class="todo-btn del js-del" data-id="${x.id}">${icon("trash",13,2)}删除</button></div>
       </div>`; }
   if(m.type==="checkin"){ const on=!!(x.log&&x.log[today()]); const st=streak(x.log);
