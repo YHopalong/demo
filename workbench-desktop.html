@@ -469,6 +469,27 @@
   .donut-seg .dot { width:12px; height:12px; border-radius:3px; flex:0 0 auto; }
   .donut-seg .seg-label { font-size:14px; font-weight:600; color:var(--text); }
   .donut-seg .seg-count { font-size:13px; color:var(--text-secondary); margin-left:auto; }
+  /* 打卡日历 */
+  .cal-toolbar { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:16px; }
+  .cal-nav-btn { width:32px; height:32px; border-radius:var(--radius-control); border:1px solid var(--border-input); background:var(--surface-card); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; }
+  .cal-nav-btn:hover { background:var(--surface-nested); color:var(--text); }
+  .cal-nav-btn:disabled { opacity:.35; cursor:default; }
+  .cal-month-label { font-size:15px; font-weight:700; min-width:100px; text-align:center; }
+  .cal-items-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media(max-width:760px){ .cal-items-grid { grid-template-columns:1fr; } }
+  .cal-card { background:var(--surface-nested); border:1px solid var(--border); border-radius:var(--radius-tile); padding:14px 16px; }
+  .cal-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-card-title { font-size:14px; font-weight:700; }
+  .cal-card-stats { font-size:12px; color:var(--text-secondary); display:flex; gap:10px; }
+  .cal-card-stats .s-streak { color:var(--module-3); font-weight:600; }
+  .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:4px; }
+  .cal-weekday { font-size:10px; color:var(--text-tertiary); text-align:center; font-weight:600; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .cal-day { aspect-ratio:1; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; background:var(--surface-card); color:var(--text-tertiary); transition:transform .1s; }
+  .cal-day.checked { background:var(--module-3); color:#fff; }
+  .cal-day.empty { background:transparent; }
+  .cal-day.today { box-shadow:0 0 0 2px var(--accent); }
+  .cal-day.future { opacity:.35; }
   .tag-field { gap:4px; }
   .tag-field .opt { cursor:pointer; transition: all .12s; }
   .tag-add-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px;
@@ -2899,8 +2920,17 @@ function icon(name, size=22, sw=1.7){
 /* ============================================================
    ENGINE — 一般无需改动
    ============================================================ */
-function isoToday(){ return new Date().toISOString().slice(0,10); }
+function isoToday(){
+  const d=new Date();
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
 function today(){ return isoToday(); }
+/* 将 Date 对象转为本地日期 key */
+function dateKey(d){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
 function avgProgress(list){
   if(!list||!list.length) return { value:0, sub:"0" };
   const v = Math.round(list.reduce((s,x)=>s+Math.min(100,(x.current/x.target)*100||0),0)/list.length);
@@ -3014,7 +3044,7 @@ function dueInfo(dateStr){
 /* 本周（周一起）7 天的 ISO 日期 */
 function weekDates(){
   const n=new Date(); const dow=(n.getDay()+6)%7; const mon=new Date(n); mon.setDate(n.getDate()-dow);
-  const arr=[]; for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); arr.push(d.toISOString().slice(0,10)); }
+  const arr=[]; for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); arr.push(dateKey(d)); }
   return arr;
 }
 function weekNum(){ const n=new Date(); const s=new Date(n.getFullYear(),0,1);
@@ -3656,6 +3686,27 @@ function renderStatsModule(key){
   });
   const donutHTML=donutSegs.map(s=>`<div class="donut-seg"><span class="dot" style="background:${s.color}"></span><span class="seg-label">${esc(s.label)}</span><span class="seg-count">${s.count} 个 · ${s.pct}%</span></div>`).join("");
 
+  // Check-in calendar
+  const checkins=data.checkin||[];
+  const {year:calYear, month:calMonth}=calTargetMonth();
+  const calMonthLabel=`${calYear}年${calMonth+1}月`;
+  const canGoNext=calMonthOffset<0;
+  const calWeekLabels=['一','二','三','四','五','六','日'];
+  const calCardsHTML=checkins.length?checkins.map(x=>{
+    const cells=buildCalendar(calYear, calMonth, x.log);
+    const totalDays=countCheckinDays(x.log);
+    const st=streak(x.log);
+    const cellsHTML=cells.map(c=>{
+      if(c.empty) return '<div class="cal-day empty"></div>';
+      const cls=['cal-day'];
+      if(c.checked) cls.push('checked');
+      if(c.isToday) cls.push('today');
+      if(c.isFuture) cls.push('future');
+      return `<div class="${cls.join(' ')}">${c.day}</div>`;
+    }).join('');
+    return `<div class="cal-card"><div class="cal-card-head"><span class="cal-card-title">${esc(x.title)}</span><span class="cal-card-stats"><span class="s-streak">连续 ${st} 天</span><span>累计 ${totalDays} 天</span></span></div><div class="cal-weekdays">${calWeekLabels.map(w=>`<div class="cal-weekday">${w}</div>`).join('')}</div><div class="cal-grid">${cellsHTML}</div></div>`;
+  }).join(''):'<div class="empty"><span class="e">'+icon('check',24)+'</span>暂无打卡项目</div>';
+
   $("#screen").innerHTML=`<div class="header"><div><h2>${m.name}</h2><p>${m.desc}</p></div><div class="spacer"></div><button class="back-home" id="back-home">${icon("home",14)}返回首页</button><span class="date-chip">${icon("calendar",14)} ${dateStr()}</span></div>
     <div class="stats-panel">
       <div class="stats-section">
@@ -3688,15 +3739,26 @@ function renderStatsModule(key){
           <div class="donut-legend">${donutHTML}</div>
         </div>
       </div>
+      <div class="stats-section">
+        <div class="stats-section-title">${icon("calendar",16)} 打卡日历</div>
+        <div class="cal-toolbar">
+          <button class="cal-nav-btn" id="cal-prev">${icon("chevron-left",16)}</button>
+          <span class="cal-month-label">${calMonthLabel}</span>
+          <button class="cal-nav-btn" id="cal-next" ${canGoNext?'':'disabled'}>${icon("chevron",16)}</button>
+        </div>
+        <div class="cal-items-grid">${calCardsHTML}</div>
+      </div>
     </div>`;
   $("#back-home").onclick=()=>go("home");
+  const calPrev=$("#cal-prev"); if(calPrev) calPrev.onclick=()=>{ calMonthOffset--; renderStatsModule(key); };
+  const calNext=$("#cal-next"); if(calNext) calNext.onclick=()=>{ if(calMonthOffset<0){ calMonthOffset++; renderStatsModule(key); } };
 }
 
 /* ---------- MODULE VIEW ---------- */
 function renderModule(key){
   const m=modOf(key);
   if(m.type==="report"){ renderReportModule(key); return; }
-  if(m.type==="stats"){ renderStatsModule(key); return; }
+  if(m.type==="stats"){ calMonthOffset=0; renderStatsModule(key); return; }
   const all=data[key]||[]; let it=all;
   const t=today();
   const q=searchQ.trim().toLowerCase();
@@ -3986,16 +4048,27 @@ function recHTML(m,x){
     <span class="rdate">${x.date||''}</span>${customBlock}</div></div></div>`;
 }
 
-function streak(log){ if(!log) return 0; let n=0; const d=new Date();
-  for(;;){ const k=d.toISOString().slice(0,10); if(log[k]){ n++; d.setDate(d.getDate()-1);} else break; } return n; }
+function streak(log){
+  if(!log) return 0;
+  let n=0; const d=new Date();
+  // 先检查今天，今天没打就从昨天开始算
+  let k=dateKey(d);
+  if(!log[k]){ d.setDate(d.getDate()-1); k=dateKey(d); }
+  for(;;){ if(log[k]){ n++; d.setDate(d.getDate()-1); k=dateKey(d);} else break; }
+  return n;
+}
 
 /* 连续全勤天数：从昨天往前数，每天所有打卡项都完成才算 */
 function fullStreak(items){
   if(!items||!items.length) return 0;
-  const d=new Date(); d.setDate(d.getDate()-1); // 从昨天开始
+  const d=new Date();
+  // 如果今天全部打卡了，从今天开始；否则从昨天开始
+  let k=dateKey(d);
+  const todayAll=items.every(x=>x.log&&x.log[k]);
+  if(!todayAll){ d.setDate(d.getDate()-1); }
   let n=0;
   for(;;){
-    const k=d.toISOString().slice(0,10);
+    k=dateKey(d);
     const allDone=items.every(x=>x.log&&x.log[k]);
     if(allDone){ n++; d.setDate(d.getDate()-1); }
     else break;
@@ -4007,6 +4080,28 @@ function fullStreak(items){
 function countCheckinDays(log){
   if(!log) return 0;
   return Object.keys(log).filter(k=>log[k]).length;
+}
+
+/* 打卡日历：当前查看的月份偏移量（0=本月，-1=上月，1=下月） */
+let calMonthOffset = 0;
+function calTargetMonth(){
+  const d=new Date();
+  d.setMonth(d.getMonth()+calMonthOffset);
+  return { year:d.getFullYear(), month:d.getMonth() };
+}
+/* 生成本月日历单元格数组 */
+function buildCalendar(year, month, log){
+  const firstDay=new Date(year, month, 1);
+  const daysInMonth=new Date(year, month+1, 0).getDate();
+  let startWeekday=(firstDay.getDay()+6)%7;
+  const t=isoToday();
+  const cells=[];
+  for(let i=0;i<startWeekday;i++) cells.push({ empty:true });
+  for(let d=1; d<=daysInMonth; d++){
+    const dk=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells.push({ day:d, dateKey:dk, checked:!!(log&&log[dk]), isToday:dk===t, isFuture:dk>t });
+  }
+  return cells;
 }
 
 function wireModule(key){ const m=modOf(key);
