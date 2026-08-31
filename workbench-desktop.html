@@ -252,6 +252,11 @@
   input, textarea { font-family:var(--font); font-size:14px; border:1px solid var(--border-input); border-radius:10px;
     padding:9px 12px; background:var(--surface-card); color:var(--text); outline:none; transition: border-color .15s, box-shadow .15s; width:100%; }
   input:focus, textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-muted); }
+  select.field-select { font-family:var(--font); font-size:14px; border:1px solid var(--border-input); border-radius:10px;
+    padding:9px 12px; background:var(--surface-card); color:var(--text); outline:none; transition:border-color .15s,box-shadow .15s; width:100%; cursor:pointer; }
+  select.field-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-muted); }
+  .badge-linked-task.js-opentask { cursor:pointer; }
+  .badge-linked-task.js-opentask:hover { filter:brightness(.97); }
   textarea { resize:vertical; min-height:80px; }
   .search-box { position:relative; width: 240px; }
   .search-box svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-tertiary); pointer-events:none; }
@@ -352,6 +357,13 @@
   .rec .del:hover { background:var(--danger-muted); color:var(--danger); }
   .rec .pbar { flex:1; min-width:80px; height:6px; border-radius:999px; background:var(--border); overflow:hidden; }
   .rec .pbar i { display:block; height:100%; border-radius:999px; }
+  /* ---- 奖励模块 ---- */
+  .reward-card { padding-bottom:12px; }
+  .reward-card .top { align-items:flex-start; }
+  .rec .reward-cost { flex:0 0 auto; font-size:25px; font-weight:800; letter-spacing:-.03em; line-height:1; margin-top:1px; }
+  .rec .reward-cost .rc-unit { font-size:12px; font-weight:600; margin-left:2px; color:var(--text-tertiary); }
+  .reward-actions { display:flex; justify-content:flex-end; margin-top:10px; }
+  .reward-actions .js-redeem[disabled] { color:var(--text-tertiary); }
   .rec .amt { font-size:15px; font-weight:800; letter-spacing:-.02em; white-space:nowrap; margin-left:auto; }
   .rec .amt.exp { color:var(--danger); } .rec .amt.inc { color:var(--module-1); }
   .rec .streak { font-size:11.5px; color:var(--module-3); font-weight:700; display:inline-flex; align-items:center; gap:4px; }
@@ -2875,6 +2887,10 @@ const CONFIG = {
       moods:["待整理","已落实"],
       seed:[ {id:51,title:"周末尝试用番茄钟重排深度工作时间",content:"把上午留给深度工作，下午处理会议和沟通。",mood:"已落实",date:"2026-08-19"},
              {id:52,title:"把每日打卡和周报联动",content:"打卡率自动写进周报，减少手动统计。",mood:"待整理",date:"2026-08-20"} ] },
+    { key:"reward", name:"奖励兑换", icon:"gift", tint:"#f7ece8", color:"var(--module-4)", type:"reward", desc:"用积分兑换小奖励 · 让坚持有回报",
+      seed:[ {id:61,title:"一杯精品咖啡",cost:30,note:"完成一周打卡后犒劳自己",redeemed:0,log:{}},
+             {id:62,title:"看一部电影",cost:80,note:"周末放松一下",redeemed:0,log:{}},
+             {id:63,title:"入手一本新书",cost:150,note:"知识投资，长久受益",redeemed:0,log:{}} ] },
     { key:"stats", name:"数据报表", icon:"chart", tint:"#f6f0e6", color:"var(--module-3)", type:"stats", desc:"关键指标 · 完成趋势 · 分类占比" },
   ],
 };
@@ -2918,6 +2934,8 @@ const ICONS = {
   'external-link':'<path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
   'download':'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
   'trending':'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  gift:'<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 13h16"/><path d="M12 9v11"/><path d="M12 9C12 6.5 10.3 5.2 9 5.8 7.9 6.3 8.6 9 12 9z"/><path d="M12 9C12 6.5 13.7 5.2 15 5.8 16.1 6.3 15.4 9 12 9z"/>',
+  dice:'<rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/>',
 };
 function icon(name, size=22, sw=1.7){
   const path = ICONS[name] || ICONS.grid;
@@ -3533,14 +3551,14 @@ function renderReportModule(key){
     const list = allReports.filter(r=>r.mood===moodMap[t.key]).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     const isOpen = reportHistoryOpen[t.key]!==false; // 默认展开
     const items = isOpen ? list.map(r=>`
-      <div class="rpt-item" data-id="${r.id}" role="button" onclick="">
+      <div class="rpt-item" data-id="${r.id}" role="button">
         <div class="rpt-item-title">${esc(r.title)}</div>
         <div class="rpt-item-date">${r.date||""}</div>
       </div>`).join("") : "";
     const empty = isOpen && list.length===0 ? `<div class="rpt-empty">暂无${t.label}记录</div>` : "";
     return `
       <div class="rpt-group">
-        <div class="rpt-group-head ${isOpen?'':'collapsed'}" data-group="${t.key}" role="button" onclick="">
+        <div class="rpt-group-head ${isOpen?'':'collapsed'}" data-group="${t.key}" role="button">
           <span class="rpt-toggle">${icon("chevron",10)}</span>
           <span class="rpt-group-label">${t.label}清单</span>
           <span class="rpt-group-count">${list.length} 篇</span>
@@ -3608,24 +3626,23 @@ function wireReport(){
   };
   const bh=$("#back-home"); if(bh) bh.onclick=()=>go("home");
 
-  // 历史清单：展开/收起（事件委托，兼容移动端）
+  // 历史清单：展开/收起 + 点击查看报告（事件委托）
   const historyPanel = $("#screen .report-history");
   if(historyPanel){
     historyPanel.addEventListener("click", function(e){
+      // 先检查是否点击了分组标题（展开/收起）
       const head = e.target.closest(".rpt-group-head");
-      if(!head) return;
-      const g = head.dataset.group;
-      reportHistoryOpen[g] = !reportHistoryOpen[g];
-      const list = head.nextElementSibling;
-      if(list){
-        list.style.display = reportHistoryOpen[g] ? "block" : "none";
-        head.classList.toggle("collapsed", !reportHistoryOpen[g]);
+      if(head){
+        const g = head.dataset.group;
+        reportHistoryOpen[g] = !reportHistoryOpen[g];
+        const list = head.nextElementSibling;
+        if(list){
+          list.style.display = reportHistoryOpen[g] ? "block" : "none";
+          head.classList.toggle("collapsed", !reportHistoryOpen[g]);
+        }
+        return;
       }
-    });
-  }
-  // 历史清单：点击具体报告
-  if(historyPanel){
-    historyPanel.addEventListener("click", function(e){
+      // 再检查是否点击了报告条目（加载内容）
       const item = e.target.closest(".rpt-item");
       if(!item) return;
       const id = +item.dataset.id;
@@ -3766,6 +3783,7 @@ function renderModule(key){
   const m=modOf(key);
   if(m.type==="report"){ renderReportModule(key); return; }
   if(m.type==="stats"){ calMonthOffset=0; renderStatsModule(key); return; }
+  if(m.type==="reward"){ renderRewardModule(key); return; }
   const all=data[key]||[]; let it=all;
   const t=today();
   const q=searchQ.trim().toLowerCase();
@@ -3846,6 +3864,7 @@ function renderModuleResults(key){
   const m=modOf(key);
   if(m.type==="report") return;
   if(m.type==="stats") return;
+  if(m.type==="reward") return;
   const all=data[key]||[];
   const q=searchQ.trim().toLowerCase();
   const it=q?all.filter(x=>(x.title||"").toLowerCase().includes(q)||(x.note||x.content||"").toLowerCase().includes(q)):all;
@@ -3857,6 +3876,97 @@ function renderModuleResults(key){
 }
 
 /* 模块统计侧栏：按 type 生成多维数据，填满右侧空间 */
+/* ---------- REWARD MODULE (积分兑换奖励) ---------- */
+function renderRewardModule(key){
+  const m=modOf(key);
+  const pts=calcPoints().total;
+  const all=data.reward||[];
+  let spent=0, redeemedTotal=0;
+  all.forEach(r=>{ const c=r.redeemed||0; spent+=(r.cost||0)*c; redeemedTotal+=c; });
+  const available=Math.max(0, pts-spent);
+  const head=`<div class="mod-summary">
+    <div class="mini"><div class="l">累计积分</div><div class="v" style="color:var(--module-4)">${pts}</div></div>
+    <div class="mini"><div class="l">可用积分</div><div class="v">${available}</div></div>
+    <div class="mini"><div class="l">已兑换</div><div class="v">${redeemedTotal} 次</div></div>
+    <div class="mini"><div class="l">奖励数</div><div class="v">${all.length}</div></div></div>`;
+  const body = all.length ? all.map(x=>rewardCard(m,x,available)).join("")
+    : `<div class="empty"><span class="e">${icon("gift",28)}</span><div>还没有奖励，点右上角「新建奖励」添加第一个小目标吧</div></div>`;
+  $("#screen").innerHTML=`<div class="header"><div><h2>${m.name}</h2><p>${m.desc}</p></div><div class="spacer"></div><button class="back-home" id="back-home">${icon("home",14)}返回首页</button><span class="date-chip">${icon("calendar",14)} ${dateStr()}</span></div>
+    ${head}
+    <div class="toolbar"><div class="spacer"></div><button class="btn" id="btn-random" style="background:var(--module-4);color:#fff;border-color:var(--module-4)" title="在积分范围内随机抽一个奖励">${icon("dice",16,2)}随机奖励</button><button class="btn" id="btn-new">${icon("plus",16,2.2)}新建奖励</button></div>
+    <div class="sec-title">我的奖励 <span style="margin-left:auto;font-weight:500;color:var(--text-secondary);font-size:12px">${all.length} 个</span></div>
+    <div class="rec-grid">${body}</div>`;
+  $("#back-home").onclick=()=>go("home");
+  $("#btn-new").onclick=()=>openEditor(key,null);
+  $("#btn-random").onclick=()=>randomReward(key);
+  wireModule(key);
+  $("#screen").querySelectorAll(".js-redeem").forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    const id=+btn.dataset.id; const r=(data.reward||[]).find(i=>i.id==id); if(!r) return;
+    if(available < (r.cost||0)){ alert("积分不足，先去完成任务或打卡攒积分吧～"); return; }
+    r.redeemed=(r.redeemed||0)+1; r.log=r.log||{}; const td=isoToday(); r.log[td]=(r.log[td]||0)+1;
+    persist(); renderRewardModule(key);
+  });
+}
+function rewardCard(m,x,available){
+  const cnt=x.redeemed||0;
+  const can = available >= (x.cost||0);
+  return `<div class="rec reward-card">
+    <div class="acts"><button class="del js-del" data-id="${x.id}" title="删除">${icon("trash",15)}</button></div>
+    <div class="top">
+      <div class="reward-cost" style="color:${m.color}">${x.cost||0}<span class="rc-unit">分</span></div>
+      <div class="body" data-edit="${x.id}">
+        <span class="rname">${esc(x.title||'未命名')}</span>
+        ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
+        ${cnt?`<span class="badge" style="background:${m.tint};color:${m.color}">已兑换 ${cnt} 次</span>`:''}
+      </div>
+    </div>
+    <div class="reward-actions">
+      <button class="todo-btn done js-redeem" data-id="${x.id}" ${can?'':'disabled style="opacity:.5;cursor:not-allowed"'}>${icon("gift",13,2)}兑换</button>
+    </div>
+  </div>`;
+}
+
+/* 随机奖励：在可用积分范围内，从奖励清单中随机挑选一个 */
+function randomReward(key){
+  const m=modOf(key);
+  const pts=calcPoints().total;
+  const all=data.reward||[];
+  let spent=0; all.forEach(r=>{ spent+=(r.cost||0)*(r.redeemed||0); });
+  const available=Math.max(0, pts-spent);
+  if(!all.length){ alert("还没有奖励，先点「新建奖励」添加一个吧～"); return; }
+  const pool=all.filter(r=>(r.cost||0)<=available);
+  if(!pool.length){ alert("可用积分 "+available+" 分，还够不着任何奖励，先去完成任务或打卡攒积分吧～"); return; }
+  const draw=(excludeId)=>{ let cand=pool; if(excludeId && pool.length>1) cand=pool.filter(r=>r.id!==excludeId); return cand[Math.floor(Math.random()*cand.length)]; };
+  const show=(chosen)=>{
+    const overlay=document.createElement("div"); overlay.className="overlay";
+    overlay.innerHTML=`<div class="modal" style="width:420px;text-align:center">
+      <div class="sub" style="margin:0 0 8px">命运为你选好了 🎲</div>
+      <div style="font-size:30px;margin:0 0 6px">${icon("dice",30,3)}</div>
+      <h3 style="margin:4px 0 2px">${esc(chosen.title||'未命名')}</h3>
+      <div style="font-size:36px;font-weight:800;color:${m.color};margin:10px 0 2px">${chosen.cost||0}<span style="font-size:16px;font-weight:600"> 分</span></div>
+      ${chosen.note?`<div class="sub" style="margin:0 0 6px">${esc(chosen.note)}</div>`:''}
+      <div class="sub" style="margin:0 0 14px">当前可用 ${available} 分 · 兑换后剩 ${available-(chosen.cost||0)} 分</div>
+      <div class="modal-actions" style="justify-content:center;flex-wrap:wrap">
+        <button class="btn ghost" id="r-close">稍后再选</button>
+        <button class="btn ghost" id="r-again">换一个</button>
+        <button class="btn" id="r-ok" style="background:var(--module-4);color:#fff;border-color:var(--module-4)">${icon("gift",13,2)}立即兑换</button>
+      </div></div>`;
+    document.body.appendChild(overlay);
+    const close=()=>overlay.remove();
+    overlay.onclick=e=>{ if(e.target===overlay) close(); };
+    overlay.querySelector("#r-close").onclick=close;
+    overlay.querySelector("#r-again").onclick=()=>{ overlay.remove(); show(draw(chosen.id)); };
+    overlay.querySelector("#r-ok").onclick=()=>{
+      const r=(data.reward||[]).find(i=>i.id==chosen.id); if(!r) return;
+      if(available < (r.cost||0)){ alert("积分不足，换个更便宜的奖励吧～"); overlay.remove(); return; }
+      r.redeemed=(r.redeemed||0)+1; r.log=r.log||{}; const td=isoToday(); r.log[td]=(r.log[td]||0)+1;
+      persist(); overlay.remove(); renderRewardModule(key);
+    };
+  };
+  show(draw(null));
+}
+
 function sideStats(m, all){
   const t=today();
   const palette=["var(--accent)","var(--module-1)","var(--module-2)","var(--module-3)","var(--module-4)","var(--module-5)","var(--danger)"];
@@ -4020,7 +4130,8 @@ function recHTML(m,x){
       <div class="todo-actions">${actBtns}${convertBtn}<button class="todo-btn del js-del" data-id="${x.id}">${icon("trash",13,2)}删除</button></div>
       </div>`; }
   if(m.type==="checkin"){ const on=!!(x.log&&x.log[today()]); const st=streak(x.log);
-    const linked=x.linkedTodo!=null;
+    const linkedTask = x.linkedTodo!=null ? (data.todo||[]).find(i=>i.id==x.linkedTodo) : null;
+    const linked = linkedTask!=null; const linkedTitle = linkedTask? (linkedTask.title||"未命名") : "";
     let durBadge='';
     if(x.durationType==="deadline"&&x.deadline){
       const di=dueInfo(x.deadline);
@@ -4034,7 +4145,7 @@ function recHTML(m,x){
     return `<div class="rec ${layoutCls}">${acts}<div class="top" style="padding-right:60px"><div class="chk js-chk ${on?'on':''}" data-id="${x.id}">${chkMark}</div>
       ${thumb}
       <div class="body" data-edit="${x.id}"><span class="rname">${esc(x.title)}</span>
-      <span class="streak">${icon("flame",13)} 连续 ${st} 天</span>${durBadge}${linked?'<span class="badge badge-linked-task">'+icon("list",11,2.6)+'关联任务</span>':''}${on?'<span class="badge" style="background:var(--accent-muted);color:var(--accent)">今日已打卡</span>':''}${customBlock}</div></div></div>`; }
+      <span class="streak">${icon("flame",13)} 连续 ${st} 天</span>${durBadge}${linked?`<span class="badge badge-linked-task js-opentask" data-opentask="${x.linkedTodo}">${icon("list",11,2.6)}关联：${esc(linkedTitle)}</span>`:''}${on?'<span class="badge" style="background:var(--accent-muted);color:var(--accent)">今日已打卡</span>':''}${customBlock}</div></div></div>`; }
   if(m.type==="progress"){ const pct=Math.min(100,Math.round((x.current/x.target)*100||0));
     return `<div class="rec ${layoutCls}">${acts}<div class="top" style="padding-right:60px">${thumb}<div class="body" data-edit="${x.id}">
       <span class="rname">${esc(x.title)}</span>
@@ -4172,6 +4283,7 @@ function wireModule(key){ const m=modOf(key);
   $("#screen").querySelectorAll("[data-edit]").forEach(el=>el.onclick=()=>openEditor(key,(data[key]).find(i=>i.id==el.dataset.edit)));
   $("#screen").querySelectorAll(".js-del").forEach(el=>el.onclick=e=>{ e.stopPropagation(); confirmDelete(key, el.dataset.id); });
   $("#screen").querySelectorAll(".js-pin").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const x=(data[key]).find(i=>i.id==el.dataset.id); x.pinned=!x.pinned; persist(); });
+  $("#screen").querySelectorAll(".js-opentask").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const id=el.dataset.opentask; const t=(data.todo||[]).find(i=>i.id==id); if(t) openEditor("todo", t); });
 }
 
 /* ---------- EDITOR MODAL (per type) ---------- */
@@ -4184,6 +4296,12 @@ function openEditor(key,item){
       <div class="field"><label>备注</label><textarea id="f-note" placeholder="补充说明">${esc(d.note||'')}</textarea></div>`;
   } else if(m.type==="checkin"){
     const dType=d.durationType||"permanent";
+    const todos=(data.todo||[]);
+    const linkedVal = d.linkedTodo!=null ? String(d.linkedTodo) : "";
+    const todoOpts = todos.length
+      ? todos.map(t=>`<option value="${t.id}" ${linkedVal===String(t.id)?'selected':''}>${esc(t.title||'未命名')}${t.done?'（已完成）':''}</option>`).join("")
+      : `<option value="" disabled>暂无任务，可选「新建任务」</option>`;
+    const newWrapShow = linkedVal==="__new__" ? "" : "display:none";
     fields=`<div class="field"><label>打卡项</label><input id="f-title" value="${attr(d.title)}" placeholder="例如：喝够 8 杯水"/></div>
       <div class="field"><label>打卡周期</label><div class="seg" id="f-dtype">
         <div class="opt ${dType==='permanent'?'on':''}" data-v="permanent" style="flex:0 0 auto;min-width:auto">长期</div>
@@ -4192,7 +4310,15 @@ function openEditor(key,item){
       </div></div>
       <div class="field" id="f-deadline-wrap" style="${dType==='deadline'?'':'display:none'}"><label>截止日期</label><input id="f-deadline" type="date" value="${attr(d.deadline||'')}"/></div>
       <div class="field" id="f-fixed-wrap" style="${dType==='fixed'?'':'display:none'}"><label>目标天数</label><input id="f-fixed-days" type="number" min="1" value="${d.fixedDays||30}" placeholder="30"/></div>
-      <p class="sub" style="margin:0">保存后可在卡片点击左侧方块打卡；连续天数自动统计，每天从零开始。</p>`;
+      <div class="field"><label>关联任务（可选）</label>
+        <select id="f-linkedtodo" class="field-select">
+          <option value="">不关联</option>
+          ${todoOpts}
+          <option value="__new__" ${linkedVal==="__new__"?'selected':''}>➕ 新建任务…</option>
+        </select>
+        <div class="field" id="f-newtask-wrap" style="${newWrapShow};margin-top:10px;margin-bottom:0"><label>新任务名称</label><input id="f-newtask" value="${attr(d.title)}" placeholder="任务名称"/></div>
+      </div>
+      <p class="sub" style="margin:0">保存后可在卡片点击左侧方块打卡；关联任务会在每日打卡时同步推进该任务的完成度。连续天数自动统计，每天从零开始。</p>`;
   } else if(m.type==="progress"){
     fields=`<div class="field"><label>名称</label><input id="f-title" value="${attr(d.title)}" placeholder="书名 / 目标"/></div>
       <div class="frow"><div class="field"><label>当前</label><input id="f-cur" type="number" value="${d.current??0}"/></div>
@@ -4206,6 +4332,10 @@ function openEditor(key,item){
       <div class="field"><label>金额 ¥</label><input id="f-amt" type="number" value="${d.amount??''}" placeholder="0"/></div></div>
       <div class="field"><label>分类</label><div class="seg" id="f-cat">${(m.categories||[]).map(c=>`<div class="opt ${c===d.category?'on':''}" data-v="${attr(c)}" style="flex:0 0 auto;min-width:auto">${esc(c)}</div>`).join("")}</div></div>
       <div class="field"><label>日期</label><input id="f-date" type="date" value="${d.date||isoToday()}"/></div>`;
+  } else if(m.type==="reward"){
+    fields=`<div class="field"><label>奖励名称</label><input id="f-title" value="${attr(d.title)}" placeholder="例如：一杯精品咖啡"/></div>
+      <div class="field"><label>积分花费</label><input id="f-cost" type="number" min="1" value="${d.cost||50}" placeholder="50"/></div>
+      <div class="field"><label>备注 / 兑换条件</label><textarea id="f-note" placeholder="什么时候可以兑换？">${esc(d.note||'')}</textarea></div>`;
   } else {
     fields=`<div class="field"><label>标题</label><input id="f-title" value="${attr(d.title)}" placeholder="给这条起个名"/></div>
       ${(m.moods&&m.moods.length)?`<div class="field"><label>标签 / 心情</label><div class="seg" id="f-mood">${m.moods.map(md=>`<div class="opt ${md===d.mood?'on':''}" data-v="${attr(md)}" style="flex:0 0 auto;min-width:auto">${md}</div>`).join("")}</div></div>`:''}
@@ -4253,6 +4383,9 @@ function openEditor(key,item){
       if(fw) fw.style.display=v==="fixed"?"":"none";
     });
   }
+  // 关联任务：选择「新建任务」时显示名称输入框
+  const linkSeg=overlay.querySelector("#f-linkedtodo");
+  if(linkSeg){ linkSeg.onchange=()=>{ const w=overlay.querySelector("#f-newtask-wrap"); if(w) w.style.display=linkSeg.value==="__new__"?"":"none"; }; }
   // tag field: add custom tag
   overlay.querySelectorAll(".tag-add-btn").forEach(btn=>{
     btn.onclick=(e)=>{
@@ -4299,9 +4432,27 @@ function openEditor(key,item){
       d.durationType=seg("#f-dtype")||"permanent";
       d.deadline=d.durationType==="deadline"?(val("#f-deadline")||""):"";
       d.fixedDays=d.durationType==="fixed"?(Math.max(1,+val("#f-fixed-days")||30)):0;
+      // 关联任务：先清理旧链接（含反向链接）
+      const prevLinked=d.linkedTodo;
+      if(prevLinked!=null){
+        const prevTodo=(data.todo||[]).find(i=>i.id==prevLinked);
+        if(prevTodo && prevTodo.linkedCheckin===d.id){ prevTodo.linkedCheckin=null; prevTodo.convertDate=null; prevTodo.completion=null; }
+        d.linkedTodo=null;
+      }
+      const lv=(val("#f-linkedtodo")||"").trim();
+      if(lv==="__new__"){
+        const nt=(val("#f-newtask")||"").trim()||d.title||"未命名";
+        const nItem=newItem(modOf("todo")); nItem.title=nt; nItem.linkedCheckin=d.id;
+        (data.todo=data.todo||[]).unshift(nItem);
+        d.linkedTodo=nItem.id;
+      } else if(lv){
+        const todo=(data.todo||[]).find(i=>i.id==lv);
+        if(todo){ todo.linkedCheckin=d.id; d.linkedTodo=todo.id; }
+      }
     }
     else if(m.type==="progress"){ d.current=Math.max(0,+val("#f-cur")||0); d.target=Math.max(1,+val("#f-tgt")||1); d.unit=(val("#f-unit")||"").trim(); d.note=(val("#f-note")||"").trim(); }
     else if(m.type==="finance"){ d.type=seg("#f-ftype")||"expense"; d.amount=Math.max(0,+val("#f-amt")||0); d.category=seg("#f-cat")||(m.categories&&m.categories[0])||"其他"; d.date=val("#f-date"); }
+    else if(m.type==="reward"){ d.cost=Math.max(1,+val("#f-cost")||50); d.note=(val("#f-note")||"").trim(); }
     else if(m.type==="note"){ d.mood=seg("#f-mood")||d.mood||""; d.content=(val("#f-content")||"").trim(); d.date=val("#f-date"); }
     // save custom fields
     (m.fields||[]).forEach(f=>{
@@ -4321,6 +4472,7 @@ function newItem(m){ const base={id:Date.now()}; let item;
   else if(m.type==="checkin") item={...base,title:"",log:{},durationType:"permanent",deadline:"",fixedDays:0};
   else if(m.type==="progress") item={...base,title:"",current:0,target:(m.unit==="页"?100:20),unit:m.unit||"",note:""};
   else if(m.type==="finance") item={...base,title:"",type:"expense",amount:"",category:(m.categories&&m.categories[0])||"其他",date:isoToday()};
+  else if(m.type==="reward") item={...base,title:"",cost:50,note:"",redeemed:0,log:{}};
   else item={...base,title:"",content:"",mood:(m.moods&&m.moods[0])||"",date:isoToday()};
   // initialize custom fields
   (m.fields||[]).forEach(f=>{ if(!(f.key in item)) item[f.key]= (f.type==="select"||f.type==="tags")?(f.options&&f.options[0]||""):""; });
