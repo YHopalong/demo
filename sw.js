@@ -1,4 +1,4 @@
-const CACHE_NAME = "shixu-gongji-v1";
+const CACHE_NAME = "shixu-gongji-v2";
 const ASSETS = [
   "workbench-desktop.html",
   "manifest.json",
@@ -22,17 +22,16 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin) return; // 跨域请求走浏览器默认策略
+  // network-first：优先拿服务器最新文件，离线时才回退缓存（开发期直观、避免旧版 HTML 挡更新）
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        const url = new URL(event.request.url);
-        if (response.ok && url.origin === location.origin) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => caches.match("workbench-desktop.html"));
-    })
+    fetch(event.request).then((response) => {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+      }
+      return response;
+    }).catch(() => caches.match(event.request).then((c) => c || caches.match("workbench-desktop.html")))
   );
 });
