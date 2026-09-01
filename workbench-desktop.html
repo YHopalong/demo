@@ -3198,6 +3198,7 @@ function weekNum(){ const n=new Date(); const s=new Date(n.getFullYear(),0,1);
 /* ---------- 积分系统 ---------- */
 const POINT_RULES = {
   todoDone: 20,     // 完成一个任务
+  subtask: 2,       // 完成一个子任务
   checkinItem: 2,   // 每天打卡一个项目
   weeklyReport: 10, // 写周报
   idea: 5,          // 写一个灵感
@@ -3223,6 +3224,9 @@ function calcPoints(){
   // 任务完成
   const todoDone = (data.todo||[]).filter(t=>t.done).length;
   const todoPts = todoDone * POINT_RULES.todoDone;
+  // 子任务完成
+  const subDone = (data.todo||[]).reduce((a,t)=>a + ((t.subtasks||[]).filter(s=>s.done).length), 0);
+  const subPts = subDone * POINT_RULES.subtask;
   // 打卡：统计所有打卡项的所有打卡天数
   let checkinCount = 0;
   (data.checkin||[]).forEach(c=>{
@@ -3239,11 +3243,12 @@ function calcPoints(){
   const _pomo=aggPomo();
   const pomoCount = _pomo.count;
   const pomoPts = pomoCount * POINT_RULES.pomodoro;
-  const total = todoPts + checkinPts + weeklyPts + ideaPts + pomoPts;
+  const total = todoPts + subPts + checkinPts + weeklyPts + ideaPts + pomoPts;
   return {
     total,
     breakdown: {
       todo: { count: todoDone, pts: todoPts, label: "完成任务", rule: POINT_RULES.todoDone + "分/个" },
+      subtask: { count: subDone, pts: subPts, label: "完成子任务", rule: POINT_RULES.subtask + "分/个" },
       checkin: { count: checkinCount, pts: checkinPts, label: "打卡次数", rule: POINT_RULES.checkinItem + "分/次" },
       weekly: { count: weeklyCount, pts: weeklyPts, label: "周报篇数", rule: POINT_RULES.weeklyReport + "分/篇" },
       idea: { count: ideaCount, pts: ideaPts, label: "灵感条数", rule: POINT_RULES.idea + "分/条" },
@@ -3259,6 +3264,9 @@ function calcTodayPoints(){
   // 任务完成（今日 doneDate）
   const todoDone = (data.todo||[]).filter(t=>t.done && t.doneDate===td).length;
   const todoPts = todoDone * POINT_RULES.todoDone;
+  // 子任务完成（今日 doneDate）
+  const subDone = (data.todo||[]).reduce((a,t)=>a + ((t.subtasks||[]).filter(s=>s.done && s.doneDate===td).length), 0);
+  const subPts = subDone * POINT_RULES.subtask;
   // 打卡：今日有打卡记录的项数
   let checkinCount = 0;
   (data.checkin||[]).forEach(c=>{ if(c.log && c.log[td]) checkinCount += 1; });
@@ -3273,11 +3281,12 @@ function calcTodayPoints(){
   const _pomo = (data.__pomo||[]).filter(p=>p.date===td);
   const pomoCount = _pomo.reduce((a,p)=>a+(p.count||0),0);
   const pomoPts = pomoCount * POINT_RULES.pomodoro;
-  const total = todoPts + checkinPts + weeklyPts + ideaPts + pomoPts;
+  const total = todoPts + subPts + checkinPts + weeklyPts + ideaPts + pomoPts;
   return {
     total,
     breakdown: {
       todo: { count: todoDone, pts: todoPts },
+      subtask: { count: subDone, pts: subPts },
       checkin: { count: checkinCount, pts: checkinPts },
       weekly: { count: weeklyCount, pts: weeklyPts },
       idea: { count: ideaCount, pts: ideaPts },
@@ -3512,6 +3521,7 @@ function renderHome(){
       <div class="pt-sub">${pts.total>0?('今日 +'+pts.total+' · 累计 '+totalPts):'今天还没攒积分，去完成点任务吧～'}</div>
       <div class="pt-breakdown">
         <span class="pt-item"><span class="pv">${pts.breakdown.todo.pts}</span>任务</span>
+        <span class="pt-item"><span class="pv">${pts.breakdown.subtask.pts}</span>子任务</span>
         <span class="pt-item"><span class="pv">${pts.breakdown.checkin.pts}</span>打卡</span>
         <span class="pt-item"><span class="pv">${pts.breakdown.weekly.pts}</span>周报</span>
         <span class="pt-item"><span class="pv">${pts.breakdown.idea.pts}</span>灵感</span>
@@ -3696,15 +3706,16 @@ function generateReport(tab){
   const _rep=data.report||[], _idea=data.idea||[], _pomo=data.__pomo||[];
   const dayPtsRows=dateList.map(d=>{
     const td=(data.todo||[]).filter(x=>x.done&&x.doneDate===d).length;
+    const sb=(data.todo||[]).reduce((a,t)=>a + ((t.subtasks||[]).filter(s=>s.done && s.doneDate===d).length), 0);
     let cc=0; (data.checkin||[]).forEach(c=>{ if(c.log&&c.log[d]) cc++; });
     const rp=_rep.filter(r=>r.date===d&&(r.mood==="周报"||r.mood==="月报")).length;
     const id=_idea.filter(i=>i.date===d).length;
     const pm=_pomo.filter(r=>r.date===d).reduce((a,r)=>a+(r.count||0),0);
-    const pts=td*PR.todoDone+cc*PR.checkinItem+rp*PR.weeklyReport+id*PR.idea+pm*PR.pomodoro;
-    return { d, td, cc, rp, id, pm, pts };
+    const pts=td*PR.todoDone+sb*PR.subtask+cc*PR.checkinItem+rp*PR.weeklyReport+id*PR.idea+pm*PR.pomodoro;
+    return { d, td, sb, cc, rp, id, pm, pts };
   });
   const periodTotalPts=dayPtsRows.reduce((a,x)=>a+x.pts,0);
-  const dayPtsLines=dayPtsRows.filter(x=>x.pts>0).map(x=>`· ${x.d}：+${x.pts} 分（任务 ${x.td} · 打卡 ${x.cc} · 周报/月报 ${x.rp} · 灵感 ${x.id} · 番茄 ${x.pm}）`);
+  const dayPtsLines=dayPtsRows.filter(x=>x.pts>0).map(x=>`· ${x.d}：+${x.pts} 分（任务 ${x.td} · 子任务 ${x.sb} · 打卡 ${x.cc} · 周报/月报 ${x.rp} · 灵感 ${x.id} · 番茄 ${x.pm}）`);
   text+=`\n\n四、每日获得积分（区间合计 +${periodTotalPts} 分）\n`;
   text+=dayPtsLines.length?dayPtsLines.join("\n"):"（暂无）";
 
@@ -4161,7 +4172,7 @@ function renderRewardModule(key){
     <div class="mini"><div class="l">已兑换</div><div class="v">${redeemedTotal} 次</div></div>
     <div class="mini"><div class="l">奖励数</div><div class="v">${all.length}</div></div></div>`;
   // 积分赚取规则（可编辑）
-  const RULE_LABELS={ todoDone:"完成一个任务", checkinItem:"每天打卡一个项目", weeklyReport:"写一篇周报 / 月报", idea:"写一个灵感", pomodoro:"完成一个番茄钟" };
+  const RULE_LABELS={ todoDone:"完成一个任务", subtask:"完成一个子任务", checkinItem:"每天打卡一个项目", weeklyReport:"写一篇周报 / 月报", idea:"写一个灵感", pomodoro:"完成一个番茄钟" };
   const rulesHTML=`<div class="point-rules">
     <div class="pr-hd" id="prToggle">📊 积分赚取规则<span class="pr-tip">· 修改即时生效</span><span class="pr-chev" id="prChev" style="transform:rotate(-90deg)">▾</span></div>
     <div class="pr-body" id="prBody" style="display:none">
