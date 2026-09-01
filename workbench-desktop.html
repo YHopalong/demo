@@ -4307,7 +4307,7 @@ function recHTML(m,x){
         ${(x.repeat&&x.repeat!=='none')?`<span class="badge" style="background:var(--accent-muted);color:var(--module-1)">${ {daily:'每天',weekly:'每周',monthly:'每月'}[x.repeat] }重复</span>`:''}
       </div>
       ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
-      ${(x.subtasks&&x.subtasks.length)?`<div class="subtask-view" onclick="event.stopPropagation()" style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px">${x.subtasks.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:${s.done?'var(--text-sub)':'var(--text)'};cursor:pointer"><input type="checkbox" class="js-subchk" data-id="${x.id}" data-sid="${s.id}" ${s.done?'checked':''} style="accent-color:var(--module-3)"/> <span style="${s.done?'text-decoration:line-through':''}">${esc(s.text)}</span></label>`).join('')}</div>`:''}
+      ${(x.subtasks&&x.subtasks.length)?`<div class="subtask-view" onclick="event.stopPropagation()" style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:4px">${x.subtasks.map(s=>`<label class="subtask-item" style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.4;color:${s.done?'var(--text-sub)':'var(--text)'};writing-mode:horizontal-tb;cursor:pointer"><input type="checkbox" class="js-subchk" data-id="${x.id}" data-sid="${s.id}" ${s.done?'checked':''} style="accent-color:var(--module-3);flex:0 0 auto"/> <span style="flex:1;min-width:0;${s.done?'text-decoration:line-through':''}">${esc(s.text)}</span>${s.done?`<span style="flex:0 0 auto;color:var(--text-sub);font-size:11px;white-space:nowrap">✓ ${s.doneDate? s.doneDate.slice(5):''}</span>`:(s.due?(()=>{const di=dueInfo(s.due);const col=di.cls==='overdue'?'var(--danger)':di.cls==='future'?'var(--text-sub)':'#b58105';const tag=di.cls==='overdue'?' 逾期':di.cls==='today'?' 今天':di.cls==='soon'?' 明天':'';return `<span style="flex:0 0 auto;font-size:11px;white-space:nowrap;color:${col}">📅 ${s.due.slice(5)}${tag}</span>`;})():'')}</label>`).join('')}</div>`:''}
       ${customBlock}</div></div>
       ${rightSide}
       <div class="todo-actions">${actBtns}${convertBtn}<button class="todo-btn del js-del" data-id="${x.id}">${icon("trash",13,2)}删除</button></div>
@@ -4472,6 +4472,7 @@ function wireModule(key){ const m=modOf(key);
     const x=(data.todo||[]).find(i=>i.id==el.dataset.id); if(!x) return;
     const st=(x.subtasks||[]).find(s=>s.id==el.dataset.sid); if(!st) return;
     st.done=el.checked;
+    st.doneDate=el.checked?today():null;
     if(x.subtasks.length && x.subtasks.every(s=>s.done)){ if(!x.done){ x.done=true; x.doneDate=today(); } }
     persist(); render();
   });
@@ -4674,16 +4675,18 @@ function bindSubtasks(overlay, d){
   const input=overlay.querySelector("#subtask-new");
   const addBtn=overlay.querySelector("#subtask-add");
   const render=()=>{
-    list.innerHTML=(d.subtasks||[]).map(s=>`<div class="subtask-row" data-sid="${s.id}" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><label style="display:flex;align-items:center;gap:6px;flex:1;cursor:pointer"><input type="checkbox" ${s.done?'checked':''}/> <span class="subtask-text" contenteditable="true" style="outline:none;flex:1">${esc(s.text)}</span></label><button type="button" class="subtask-del" style="border:none;background:none;color:var(--text-sub);font-size:18px;cursor:pointer;line-height:1">×</button></div>`).join("");
+    list.innerHTML=(d.subtasks||[]).map(s=>`<div class="subtask-row" data-sid="${s.id}" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><label style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:pointer"><input type="checkbox" ${s.done?'checked':''}/> <span class="subtask-text" contenteditable="true" style="outline:none;flex:1;min-width:0">${esc(s.text)}</span></label><input type="date" class="subtask-due" value="${s.due||''}" style="border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;padding:2px 4px;flex:0 0 auto"/> <button type="button" class="subtask-del" style="border:none;background:none;color:var(--text-sub);font-size:18px;cursor:pointer;line-height:1">×</button></div>`).join("");
     list.querySelectorAll(".subtask-row").forEach(row=>{
       const sid=+row.dataset.sid; const st=d.subtasks.find(x=>x.id===sid); if(!st) return;
       row.querySelector("input[type=checkbox]").onchange=e=>{ st.done=e.target.checked;
+        st.doneDate=st.done?today():null;
         if(d.subtasks.length && d.subtasks.every(x=>x.done)){ d.done=true; d.doneDate=today(); } };
       const txt=row.querySelector(".subtask-text"); txt.onblur=()=>{ st.text=txt.textContent.trim(); };
+      const dueEl=row.querySelector(".subtask-due"); if(dueEl) dueEl.onchange=()=>{ st.due=dueEl.value||""; };
       row.querySelector(".subtask-del").onclick=()=>{ d.subtasks=d.subtasks.filter(x=>x.id!==sid); render(); };
     });
   };
-  const add=()=>{ const v=(input.value||"").trim(); if(!v) return; d.subtasks.push({id:Date.now()+Math.floor(Math.random()*1000), text:v, done:false}); input.value=""; render(); };
+  const add=()=>{ const v=(input.value||"").trim(); if(!v) return; d.subtasks.push({id:Date.now()+Math.floor(Math.random()*1000), text:v, done:false, due:""}); input.value=""; render(); };
   addBtn.onclick=add;
   input.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); add(); } };
   render();
