@@ -3094,6 +3094,29 @@ function dbPut(val){
   });
 }
 
+/* 数据迁移：把旧版本/异常格式的 data 规整成当前版本期望的类型，防止导入或历史残留导致后续 .filter/.map 等报错 */
+function migrateData(d){
+  if(!d || typeof d!=="object") return;
+  // __pomo：必须是 [{date,count,min}] 数组；兼容旧版 {date:count} 对象格式
+  if(!Array.isArray(d.__pomo)){
+    if(d.__pomo && typeof d.__pomo==="object"){
+      const entries=Object.entries(d.__pomo).filter(([k,v])=>/^\d{4}-\d{2}-\d{2}$/.test(k) && (typeof v==="number"||typeof v==="object"));
+      d.__pomo=entries.map(([date,v])=>{
+        if(typeof v==="number") return {date, count:v, min:v*5};
+        const count=+(v&&v.count)||0; const min=+(v&&v.min)||(count*5);
+        return {date, count, min};
+      });
+    } else { d.__pomo=[]; }
+  }
+  // 其他字段类型兜底
+  if(!Array.isArray(d.__trash)) d.__trash=[];
+  d.__pointRules=Object.assign({}, POINT_RULES, d.__pointRules||{});
+  CONFIG.modules.forEach(m=>{ if(!Array.isArray(d[m.key])) d[m.key]=[]; });
+  if(typeof d.__theme!=="string") d.__theme="light";
+  if(typeof d.__onboarded!=="boolean") d.__onboarded=false;
+  if(typeof d.__lastMotivation!=="string" && d.__lastMotivation!=null) d.__lastMotivation=null;
+}
+
 const store = {
   async load(){
     try{
@@ -3128,6 +3151,7 @@ const store = {
           const imported=JSON.parse(e.target.result);
           if(typeof imported!=="object"||imported===null) throw new Error("文件格式错误");
           data=imported;
+          migrateData(data);
           await store.save();
           render();
           resolve();
@@ -5085,6 +5109,7 @@ function maybeShowDailyMotivation(force){
 /* ---------- 初始化：异步加载数据 ---------- */
 async function init(){
   data = await store.load();
+  migrateData(data); await store.save(); // 防御历史残留旧格式
   Object.assign(POINT_RULES, data.__pointRules||{}); // 回读用户自定义的积分规则
   data.__trash = data.__trash || [];
   data.__notify = data.__notify || false;
