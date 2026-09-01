@@ -4307,6 +4307,7 @@ function recHTML(m,x){
         ${(x.repeat&&x.repeat!=='none')?`<span class="badge" style="background:var(--accent-muted);color:var(--module-1)">${ {daily:'每天',weekly:'每周',monthly:'每月'}[x.repeat] }重复</span>`:''}
       </div>
       ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
+      ${(x.subtasks&&x.subtasks.length)?`<div class="subtask-view" onclick="event.stopPropagation()" style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px">${x.subtasks.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:${s.done?'var(--text-sub)':'var(--text)'};cursor:pointer"><input type="checkbox" class="js-subchk" data-id="${x.id}" data-sid="${s.id}" ${s.done?'checked':''} style="accent-color:var(--module-3)"/> <span style="${s.done?'text-decoration:line-through':''}">${esc(s.text)}</span></label>`).join('')}</div>`:''}
       ${customBlock}</div></div>
       ${rightSide}
       <div class="todo-actions">${actBtns}${convertBtn}<button class="todo-btn del js-del" data-id="${x.id}">${icon("trash",13,2)}删除</button></div>
@@ -4467,6 +4468,13 @@ function wireModule(key){ const m=modOf(key);
   $("#screen").querySelectorAll(".js-del").forEach(el=>el.onclick=e=>{ e.stopPropagation(); confirmDelete(key, el.dataset.id); });
   $("#screen").querySelectorAll(".js-pin").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const x=(data[key]).find(i=>i.id==el.dataset.id); x.pinned=!x.pinned; persist(); });
   $("#screen").querySelectorAll(".js-opentask").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const id=el.dataset.opentask; const t=(data.todo||[]).find(i=>i.id==id); if(t) openEditor("todo", t); });
+  $("#screen").querySelectorAll(".js-subchk").forEach(el=>el.onchange=()=>{
+    const x=(data.todo||[]).find(i=>i.id==el.dataset.id); if(!x) return;
+    const st=(x.subtasks||[]).find(s=>s.id==el.dataset.sid); if(!st) return;
+    st.done=el.checked;
+    if(x.subtasks.length && x.subtasks.every(s=>s.done)){ if(!x.done){ x.done=true; x.doneDate=today(); } }
+    persist(); render();
+  });
 }
 
 /* ---------- EDITOR MODAL (per type) ---------- */
