@@ -852,6 +852,19 @@
   .subtask-del:hover { color: var(--danger); background: var(--surface-nested); }
   .due-wrap { position: relative; flex: 0 0 auto; display: inline-flex; }
   .due-ph { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-tertiary); font-size: 12px; display: inline; }
+
+  /* 子任务名称：强制横排，兜底 inline 被覆盖/缓存旧版的情况 */
+  .sub-name { writing-mode: horizontal-tb !important; text-orientation: mixed !important; }
+  /* 积分规则（奖励模块内可编辑） */
+  .point-rules { margin:14px 0 4px; border:1px solid var(--border); border-radius:12px; background:var(--surface-card); overflow:hidden; }
+  .pr-hd { display:flex; align-items:center; gap:8px; padding:11px 14px; font-size:14px; font-weight:700; cursor:pointer; user-select:none; color:var(--text); }
+  .pr-tip { font-weight:500; font-size:11px; color:var(--text-tertiary); }
+  .pr-chev { margin-left:auto; color:var(--text-secondary); transition:transform .2s; }
+  .pr-body { padding:4px 14px 12px; display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--border); }
+  .pr-row { display:flex; align-items:center; gap:10px; font-size:13px; }
+  .pr-name { flex:1; min-width:0; color:var(--text); }
+  .pr-val { width:84px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font-size:13px; padding:6px 8px; text-align:center; }
+  .pr-unit { color:var(--text-secondary); font-size:12px; }
 </style>
 <style>.trae-browser-inspect-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:999997;pointer-events:auto;background:rgba(0,0,0,0)}.trae-browser-inspect-highlight-box{position:absolute;top:0;left:0;z-index:999998;display:none}.trae-browser-inspect-highlight-tag{position:absolute;left:0px;top:0px;height:18px;padding:0 6px;box-sizing:border-box;border-radius:4px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:12px;font-weight:400;display:none;align-items:center;z-index:999999}.trae-browser-inspect-highlight-box-show{display:flex}.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show{display:flex !important}.trae-browser-inspect-select-button{position:absolute;top:0;left:0;background-color:var(--vscode-icube--bg-bg-base-secondary, "#222427");color:var(--vscode-icube--text-text-default-active, "#F5F9FE");font-size:11px;font-weight:500;border:1px solid var(--vscode-icube--border-neutral-l1, "#E0E2F217");border-radius:6px;padding:0 8px;height:32px;display:none;align-items:center;cursor:pointer;z-index:999999;gap:4px}.trae-browser-inspect-select-button svg,.trae-browser-inspect-select-button span{z-index:1}.trae-browser-inspect-select-highlight-box{background:rgba(0,0,0,0) !important}.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag{background-color:var(--vscode-icube--status-success-active, "#1E8B56")}.trae-browser-inspect-comment-card-container{position:fixed;top:0;left:0;z-index:9999999;pointer-events:auto}.trae-browser-inspect-comment-card-container .trae-browser-inspect-comment-card{display:flex;padding-top:0px !important;align-items:center;z-index:9999999 !important;background-color:var(--vscode-icube--bg-bg-menu)}*[contenteditable]{outline:none}.trae-browser-inspect-click-effect{position:fixed;width:40px;height:40px;margin-left:-20px;margin-top:-20px;border-radius:50%;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);pointer-events:none;animation:trae-browser-inspect-ripple 500ms ease-out forwards;z-index:999999}@keyframes trae-browser-inspect-ripple{0%{transform:scale(0.3);opacity:.8}100%{transform:scale(2);opacity:0}}.trae-browser-inspect-ref-box{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");pointer-events:none;z-index:999998;animation:trae-browser-inspect-fadeInOut 2s ease-in-out forwards}.trae-browser-inspect-ref-label{position:absolute;top:-14px;left:0;height:14px;padding:0 4px;box-sizing:border-box;border-radius:2px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:9px;font-weight:500;display:flex;align-items:center;white-space:nowrap;z-index:999999}@keyframes trae-browser-inspect-fadeInOut{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}.trae-browser-inspect-input-highlight{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");border-radius:4px;pointer-events:none;z-index:999998;box-shadow:0 0 8px var(--vscode-icube-colorSuccessHover, "#2FB287");animation:trae-browser-inspect-input-pulse 600ms ease-out forwards}@keyframes trae-browser-inspect-input-pulse{0%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}30%{opacity:1;box-shadow:0 0 12px var(--vscode-icube-colorSuccessHover, "#2FB287")}100%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}}.trae-browser-inspect-virtual-cursor{position:fixed;width:20px;height:20px;pointer-events:none;z-index:9999999;opacity:0;transition:opacity .2s ease}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-visible{opacity:1}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-idle{animation:trae-browser-inspect-cursor-breathe 2s ease-in-out infinite}.trae-browser-inspect-virtual-cursor svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))}@keyframes trae-browser-inspect-cursor-breathe{0%,100%{opacity:.7}50%{opacity:1}}.trae-browser-inspect-scroll-indicator{position:fixed;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;background-color:rgba(0,0,0,.7);color:#fff;font-size:13px;font-weight:500;pointer-events:none;z-index:999999;animation:trae-browser-inspect-indicator-fade 800ms ease-out forwards;backdrop-filter:blur(4px)}.trae-browser-inspect-scroll-indicator svg{width:16px;height:16px;fill:#fff}.trae-browser-inspect-scroll-indicator.trae-scroll-up{top:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-down{bottom:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-left{left:12px;top:50%;transform:translateY(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-right{right:12px;top:50%;transform:translateY(-50%)}@keyframes trae-browser-inspect-indicator-fade{0%{opacity:0;transform:translateX(-50%) scale(0.9)}15%{opacity:1;transform:translateX(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-scroll-indicator.trae-scroll-left,.trae-browser-inspect-scroll-indicator.trae-scroll-right{animation-name:trae-browser-inspect-indicator-fade-y}@keyframes trae-browser-inspect-indicator-fade-y{0%{opacity:0;transform:translateY(-50%) scale(0.9)}15%{opacity:1;transform:translateY(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-key-badge{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:8px;background-color:rgba(0,0,0,.8);color:#fff;font-size:18px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,monospace;pointer-events:none;z-index:999999;animation:trae-browser-inspect-key-pop 500ms ease-out forwards;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);box-shadow:0 4px 12px rgba(0,0,0,.3);letter-spacing:1px}@keyframes trae-browser-inspect-key-pop{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(0.9)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}.trae-browser-inspect-step-badge{position:fixed;top:12px;left:12px;padding:6px 12px;border-radius:6px;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);color:#fff;font-size:12px;font-weight:600;pointer-events:none;z-index:999999;animation:trae-browser-inspect-step-slide 600ms ease-out forwards;box-shadow:0 2px 8px rgba(47,178,135,.3);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trae-browser-inspect-step-badge.trae-step-old{opacity:.4;transform:translateY(0)}@keyframes trae-browser-inspect-step-slide{0%{opacity:0;transform:translateX(-20px)}20%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(0)}}.trae-browser-inspect-drag-trail{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999998}.trae-browser-inspect-drag-trail svg{width:100%;height:100%}.trae-browser-inspect-drag-trail .trae-drag-path{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;stroke-dasharray:8 4;opacity:.6;animation:trae-browser-inspect-dash 600ms linear forwards}.trae-browser-inspect-drag-trail .trae-drag-dot{fill:var(--vscode-icube-colorSuccessHover, #2FB287);filter:drop-shadow(0 0 4px rgba(47, 178, 135, 0.6))}.trae-browser-inspect-drag-trail .trae-drag-endpoint{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;opacity:.5}@keyframes trae-browser-inspect-dash{0%{stroke-dashoffset:200}100%{stroke-dashoffset:0}}.trae-browser-inspect-drag-trail.trae-drag-fade{animation:trae-browser-inspect-trail-fade 400ms ease-out forwards}@keyframes trae-browser-inspect-trail-fade{0%{opacity:1}100%{opacity:0}}</style><script type="module">(async () => {
   try {
@@ -3215,6 +3228,40 @@ function calcPoints(){
   };
 }
 
+/* 今日积分：复用同样的积分规则，只统计今天获得的部分 */
+function calcTodayPoints(){
+  const td = today();
+  if(!data) return { total:0, breakdown:{} };
+  // 任务完成（今日 doneDate）
+  const todoDone = (data.todo||[]).filter(t=>t.done && t.doneDate===td).length;
+  const todoPts = todoDone * POINT_RULES.todoDone;
+  // 打卡：今日有打卡记录的项数
+  let checkinCount = 0;
+  (data.checkin||[]).forEach(c=>{ if(c.log && c.log[td]) checkinCount += 1; });
+  const checkinPts = checkinCount * POINT_RULES.checkinItem;
+  // 周报/月报（今日生成）
+  const weeklyCount = (data.report||[]).filter(r=>r.mood==="周报" && r.date===td).length;
+  const weeklyPts = weeklyCount * POINT_RULES.weeklyReport;
+  // 灵感（今日添加）
+  const ideaCount = (data.idea||[]).filter(i=>i.date===td).length;
+  const ideaPts = ideaCount * POINT_RULES.idea;
+  // 番茄钟（今日）
+  const _pomo = (data.__pomo||[]).filter(p=>p.date===td);
+  const pomoCount = _pomo.reduce((a,p)=>a+(p.count||0),0);
+  const pomoPts = pomoCount * POINT_RULES.pomodoro;
+  const total = todoPts + checkinPts + weeklyPts + ideaPts + pomoPts;
+  return {
+    total,
+    breakdown: {
+      todo: { count: todoDone, pts: todoPts },
+      checkin: { count: checkinCount, pts: checkinPts },
+      weekly: { count: weeklyCount, pts: weeklyPts },
+      idea: { count: ideaCount, pts: ideaPts },
+      pomodoro: { count: pomoCount, pts: pomoPts },
+    }
+  };
+}
+
 /* 秒级心跳：更新时钟 */
 function startClock(){ if(clockTimer) return; clockTimer=setInterval(heartbeat,1000); heartbeat(); }
 function heartbeat(){
@@ -3431,13 +3478,14 @@ function renderHome(){
     <div><div class="clk" id="clk">${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}</div>
       <div class="cmeta"><span>${dateStr()}</span><span class="dot"></span><span>第 ${weekNum()} 周</span></div></div></div>`;
 
-  // 积分卡
-  const pts = calcPoints();
+  // 积分卡（首页显示「今日 / 总」积分，如 20/80）
+  const pts = calcTodayPoints();
+  const totalPts = calcPoints().total;
   const ptsCard=`<div class="points-card b3">
-    <div class="pt-hd"><span class="coin"></span>累计积分</div>
+    <div class="pt-hd"><span class="coin"></span>今日积分 / 总积分</div>
     <div>
-      <div class="pt-num">${pts.total.toLocaleString()}</div>
-      <div class="pt-sub">继续努力，积跬步以至千里</div>
+      <div class="pt-num">${pts.total.toLocaleString()}<span style="font-size:.55em;color:var(--text-sub);font-weight:600"> / ${totalPts.toLocaleString()}</span></div>
+      <div class="pt-sub">${pts.total>0?('今日 +'+pts.total+' · 累计 '+totalPts):'今天还没攒积分，去完成点任务吧～'}</div>
       <div class="pt-breakdown">
         <span class="pt-item"><span class="pv">${pts.breakdown.todo.pts}</span>任务</span>
         <span class="pt-item"><span class="pv">${pts.breakdown.checkin.pts}</span>打卡</span>
@@ -3619,6 +3667,23 @@ function generateReport(tab){
   text+=pending.length?pending.map(taskLine).join("\n"):"（暂无）";
   text+=checkinSection;
 
+  // 每日获得积分（按日统计区间内每天获得的积分）
+  const PR=POINT_RULES;
+  const _rep=data.report||[], _idea=data.idea||[], _pomo=data.__pomo||[];
+  const dayPtsRows=dateList.map(d=>{
+    const td=(data.todo||[]).filter(x=>x.done&&x.doneDate===d).length;
+    let cc=0; (data.checkin||[]).forEach(c=>{ if(c.log&&c.log[d]) cc++; });
+    const rp=_rep.filter(r=>r.date===d&&(r.mood==="周报"||r.mood==="月报")).length;
+    const id=_idea.filter(i=>i.date===d).length;
+    const pm=_pomo.filter(r=>r.date===d).reduce((a,r)=>a+(r.count||0),0);
+    const pts=td*PR.todoDone+cc*PR.checkinItem+rp*PR.weeklyReport+id*PR.idea+pm*PR.pomodoro;
+    return { d, td, cc, rp, id, pm, pts };
+  });
+  const periodTotalPts=dayPtsRows.reduce((a,x)=>a+x.pts,0);
+  const dayPtsLines=dayPtsRows.filter(x=>x.pts>0).map(x=>`· ${x.d}：+${x.pts} 分（任务 ${x.td} · 打卡 ${x.cc} · 周报/月报 ${x.rp} · 灵感 ${x.id} · 番茄 ${x.pm}）`);
+  text+=`\n\n四、每日获得积分（区间合计 +${periodTotalPts} 分）\n`;
+  text+=dayPtsLines.length?dayPtsLines.join("\n"):"（暂无）";
+
   // 周报汇总
   const reports=data.report||[];
   const periodReports=reports.filter(r=>{
@@ -3629,7 +3694,7 @@ function generateReport(tab){
   });
   if(periodReports.length){
     const lines=periodReports.map(r=>`· ${r.title}（${r.date}）`);
-    text+=`\n\n四、${tab==="daily"?"今日写的周报":"本期周报"}（共 ${periodReports.length} 篇）\n`+lines.join("\n");
+    text+=`\n\n五、${tab==="daily"?"今日写的周报":"本期周报"}（共 ${periodReports.length} 篇）\n`+lines.join("\n");
   }
 
   // 灵感汇总
@@ -3643,7 +3708,7 @@ function generateReport(tab){
   });
   if(periodIdeas.length){
     const lines=periodIdeas.map(i=>`· [${i.mood||"待整理"}] ${i.title}`);
-    text+=`\n\n五、灵感记录（共 ${periodIdeas.length} 条）\n`+lines.join("\n");
+    text+=`\n\n六、灵感记录（共 ${periodIdeas.length} 条）\n`+lines.join("\n");
   }
 
   // 番茄钟汇总
@@ -3652,7 +3717,7 @@ function generateReport(tab){
   const pomoCnt=pomoOnPeriod.reduce((a,r)=>a+(r.count||0),0);
   const pomoMin=pomoOnPeriod.reduce((a,r)=>a+(r.min||0),0);
   if(pomoCnt>0){
-    text+=`\n\n六、番茄钟\n`;
+    text+=`\n\n七、番茄钟\n`;
     text+=`· 本期完成：${pomoCnt} 个 · ${pomoMin} 分钟`;
   }
 
@@ -4071,16 +4136,33 @@ function renderRewardModule(key){
     <div class="mini"><div class="l">可用积分</div><div class="v">${available}</div></div>
     <div class="mini"><div class="l">已兑换</div><div class="v">${redeemedTotal} 次</div></div>
     <div class="mini"><div class="l">奖励数</div><div class="v">${all.length}</div></div></div>`;
+  // 积分赚取规则（可编辑）
+  const RULE_LABELS={ todoDone:"完成一个任务", checkinItem:"每天打卡一个项目", weeklyReport:"写一篇周报 / 月报", idea:"写一个灵感", pomodoro:"完成一个番茄钟" };
+  const rulesHTML=`<div class="point-rules">
+    <div class="pr-hd" id="prToggle">📊 积分赚取规则<span class="pr-tip">· 修改即时生效</span><span class="pr-chev" id="prChev" style="transform:rotate(-90deg)">▾</span></div>
+    <div class="pr-body" id="prBody" style="display:none">
+      ${Object.keys(RULE_LABELS).map(k=>`<div class="pr-row"><span class="pr-name">${RULE_LABELS[k]}</span><input type="number" min="0" step="1" class="pr-val" data-rule="${k}" value="${POINT_RULES[k]}" /><span class="pr-unit">分/次</span></div>`).join("")}
+    </div></div>`;
   const body = all.length ? all.map(x=>rewardCard(m,x,available)).join("")
     : `<div class="empty"><span class="e">${icon("gift",28)}</span><div>还没有奖励，点右上角「新建奖励」添加第一个小目标吧</div></div>`;
   $("#screen").innerHTML=`<div class="header"><div><h2>${m.name}</h2><p>${m.desc}</p></div><div class="spacer"></div><button class="back-home" id="back-home">${icon("home",14)}返回首页</button><span class="date-chip">${icon("calendar",14)} ${dateStr()}</span></div>
     ${head}
+    ${rulesHTML}
     <div class="toolbar"><div class="spacer"></div><input id="reward-search" placeholder="搜索奖励…" style="border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:13px;background:var(--surface);color:var(--text);width:150px;outline:none" /><button class="btn" id="btn-random" style="background:var(--module-4);color:#fff;border-color:var(--module-4)" title="在积分范围内随机抽一个奖励">${icon("dice",16,2)}随机奖励</button><button class="btn" id="btn-new">${icon("plus",16,2.2)}新建奖励</button></div>
     <div class="sec-title">我的奖励 <span style="margin-left:auto;font-weight:500;color:var(--text-secondary);font-size:12px">${all.length} 个</span></div>
     <div class="rec-grid">${body}</div>`;
   $("#back-home").onclick=()=>go("home");
   $("#btn-new").onclick=()=>openEditor(key,null);
   $("#btn-random").onclick=()=>randomReward(key);
+  // 积分规则：折叠 + 编辑
+  const prToggle=$("#prToggle"); if(prToggle) prToggle.onclick=()=>{
+    const b=$("#prBody"), c=$("#prChev"); if(!b) return;
+    const hide=b.style.display==="none"; b.style.display=hide?"":"none"; if(c) c.style.transform=hide?"":"rotate(-90deg)";
+  };
+  $("#screen").querySelectorAll(".pr-val").forEach(inp=>inp.onchange=()=>{
+    const k=inp.dataset.rule; const v=Math.max(0, parseInt(inp.value||"0",10)||0);
+    POINT_RULES[k]=v; data.__pointRules=Object.assign({}, POINT_RULES); persist();
+  });
   wireModule(key);
   const rs=$("#reward-search"); if(rs) rs.oninput=e=>{
     const q=e.target.value.trim().toLowerCase();
@@ -4313,7 +4395,7 @@ function recHTML(m,x){
         ${(x.repeat&&x.repeat!=='none')?`<span class="badge" style="background:var(--accent-muted);color:var(--module-1)">${ {daily:'每天',weekly:'每周',monthly:'每月'}[x.repeat] }重复</span>`:''}
       </div>
       ${x.note?`<div class="rnote">${esc(x.note)}</div>`:''}
-      ${(x.subtasks&&x.subtasks.length)?`<div class="subtask-view" onclick="event.stopPropagation()" style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:4px">${x.subtasks.map(s=>`<label class="subtask-item" style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.4;color:${s.done?'var(--text-sub)':'var(--text)'};writing-mode:horizontal-tb;cursor:pointer"><input type="checkbox" class="js-subchk" data-id="${x.id}" data-sid="${s.id}" ${s.done?'checked':''} style="accent-color:var(--module-3);flex:0 0 auto"/> <span style="flex:1;min-width:0;${s.done?'text-decoration:line-through':''}">${esc(s.text)}</span>${s.done?`<span style="flex:0 0 auto;color:var(--text-sub);font-size:11px;white-space:nowrap">✓ ${s.doneDate? s.doneDate.slice(5):''}</span>`:(s.due?(()=>{const di=dueInfo(s.due);const col=di.cls==='overdue'?'var(--danger)':di.cls==='future'?'var(--text-sub)':'#b58105';const tag=di.cls==='overdue'?' 逾期':di.cls==='today'?' 今天':di.cls==='soon'?' 明天':'';return `<span style="flex:0 0 auto;font-size:11px;white-space:nowrap;color:${col}">📅 ${s.due.slice(5)}${tag}</span>`;})():'')}</label>`).join('')}</div>`:''}
+      ${(x.subtasks&&x.subtasks.length)?`<div class="subtask-view" onclick="event.stopPropagation()" style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:6px">${x.subtasks.map(s=>{const doneBadge=s.done?`<span style="display:inline-flex;align-items:center;gap:4px;color:var(--text-sub)">✓ 完成${s.doneDate?' '+s.doneDate.slice(5):''}</span>`:'';const dueBadge=!s.done&&s.due?(()=>{const di=dueInfo(s.due);const col=di.cls==='overdue'?'var(--danger)':di.cls==='future'?'var(--text-sub)':'#b58105';const tag=di.cls==='overdue'?' 逾期':di.cls==='today'?' 今天':di.cls==='soon'?' 明天':'';return `<span style="display:inline-flex;align-items:center;gap:4px;color:${col}">📅 ${s.due.slice(5)}${tag}</span>`;})():'';const meta=(doneBadge||dueBadge)?`<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;padding-left:26px;line-height:1.6">${doneBadge}${dueBadge}</div>`:'';return `<div class="subtask-item" style="display:flex;flex-direction:column;gap:4px;padding:4px 0;writing-mode:horizontal-tb;color:${s.done?'var(--text-sub)':'var(--text)'};cursor:default"><div style="display:flex;align-items:center;gap:10px;width:100%;flex-direction:row;writing-mode:horizontal-tb"><input type="checkbox" class="js-subchk" data-id="${x.id}" data-sid="${s.id}" ${s.done?'checked':''} style="accent-color:var(--module-3);flex:0 0 auto;width:16px;height:16px;cursor:pointer"/> <span class="sub-name" style="flex:1;min-width:0;font-size:13px;line-height:1.5;${s.done?'text-decoration:line-through':''}">${s.text?esc(s.text):'<i style="color:var(--text-tertiary);font-style:normal;font-size:12px">(未命名子任务，点此编辑)</i>'}</span></div>${meta}</div>`;}).join('')}</div>`:''}
       ${customBlock}</div></div>
       ${rightSide}
       <div class="todo-actions">${actBtns}${convertBtn}<button class="todo-btn del js-del" data-id="${x.id}">${icon("trash",13,2)}删除</button></div>
@@ -4681,7 +4763,7 @@ function bindSubtasks(overlay, d){
   const input=overlay.querySelector("#subtask-new");
   const addBtn=overlay.querySelector("#subtask-add");
   const render=()=>{
-    list.innerHTML=(d.subtasks||[]).map(s=>`<div class="subtask-row" data-sid="${s.id}" style="display:flex;align-items:center;gap:14px;padding:9px 4px 9px 6px;border-bottom:1px solid var(--border)"><label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer"><input type="checkbox" ${s.done?'checked':''} style="flex:0 0 auto;width:16px;height:16px;cursor:pointer;accent-color:var(--module-3)"/> <span class="subtask-text" contenteditable="true" style="outline:none;flex:1;min-width:0;font-size:14px">${esc(s.text)}</span></label><span style="width:1px;height:18px;background:var(--border);flex:0 0 auto"></span><span class="due-wrap"><input type="date" class="subtask-due" value="${s.due||''}" title="设定目标完成日期" style="border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;padding:6px 10px;flex:0 0 auto;width:150px"/> <span class="due-ph" style="display:${s.due?'none':'inline'}">📅 选截止</span></span> <button type="button" class="subtask-del" title="删除子任务" style="border:none;font-size:20px;cursor:pointer;line-height:1;padding:4px 10px;border-radius:6px;transition:all .15s">×</button></div>`).join("");
+    list.innerHTML=(d.subtasks||[]).map(s=>`<div class="subtask-row" data-sid="${s.id}" style="display:flex;align-items:center;gap:14px;padding:9px 4px 9px 6px;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:default"><input type="checkbox" ${s.done?'checked':''} style="flex:0 0 auto;width:16px;height:16px;cursor:pointer;accent-color:var(--module-3)"/> <span class="subtask-text" contenteditable="true" style="outline:none;flex:1;min-width:0;font-size:14px">${esc(s.text)}</span></div><span style="width:1px;height:18px;background:var(--border);flex:0 0 auto"></span><span class="due-wrap"><input type="date" class="subtask-due" value="${s.due||''}" title="设定目标完成日期" style="border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;padding:6px 10px;flex:0 0 auto;width:150px"/> <span class="due-ph" style="display:${s.due?'none':'inline'}">📅 选截止</span></span> <button type="button" class="subtask-del" title="删除子任务" style="border:none;font-size:20px;cursor:pointer;line-height:1;padding:4px 10px;border-radius:6px;transition:all .15s">×</button></div>`).join("");
     list.querySelectorAll(".subtask-row").forEach(row=>{
       const sid=+row.dataset.sid; const st=d.subtasks.find(x=>x.id===sid); if(!st) return;
       row.querySelector("input[type=checkbox]").onchange=e=>{ st.done=e.target.checked;
@@ -4956,16 +5038,54 @@ function showOnboarding(step){
       <button class="btn" id="ob-next">${step===ONB_STEPS.length-1?"开始使用":"下一步"}</button>
     </div></div>`;
   document.body.appendChild(overlay);
-  const close=done=>{ overlay.remove(); if(done){ data.__onboarded=true; store.save(); } };
+  const close=done=>{ overlay.remove(); if(done){ data.__onboarded=true; store.save(); maybeShowDailyMotivation(true); } };
   overlay.onclick=e=>{ if(e.target===overlay) close(false); };
   const nx=overlay.querySelector("#ob-next"); if(nx) nx.onclick=()=>{ if(step===ONB_STEPS.length-1){ close(true); } else { overlay.remove(); showOnboarding(step+1); } };
   const pv=overlay.querySelector("#ob-prev"); if(pv) pv.onclick=()=>{ overlay.remove(); showOnboarding(step-1); };
   const sk=overlay.querySelector("#ob-skip"); if(sk) sk.onclick=()=>close(false);
 }
 
+/* 每日首次打开的激励寄语 */
+const MOTIVATIONS=[
+  "每一个今天，都是你改写未来的机会。行动，就是最好的答案。",
+  "把大事拆成小事，把小事做成习惯，时间会奖励持续前行的人。",
+  "你不必一开始就完美，但你可以今天就比昨天更进一步。",
+  "专注当下这一件，胜过焦虑未来千万件。",
+  "自律不是束缚，而是把想要的自己，一步步活出来。",
+  "完成比完美更重要——先动起来，答案会在路上浮现。",
+  "你所坚持的每一分钟，都在悄悄为明天的你铺路。",
+  "困难是成长的邀请函，跨过去，就是新的高度。",
+  "今天的努力或许无声，但未来的你会替它鼓掌。",
+  "把目标写下来，它就从愿望变成了计划；去做，计划就成了现实。",
+  "别怕走得慢，只要在走，就比停留在原点更接近光芒。",
+  "真正的复利，是每天进步 1% 的自己。",
+  "你管理的不仅是时间，更是想要成为的那个人的形状。",
+  "一次只赢一个小关卡，通关的从来都是长期主义者。",
+  "今天的清单再长，也从第一个勾选开始变短。"
+];
+function maybeShowDailyMotivation(force){
+  if(!force && data.__lastMotivation===today()) return;
+  const text=MOTIVATIONS[Math.floor(Math.random()*MOTIVATIONS.length)];
+  data.__lastMotivation=today(); store.save();
+  const overlay=document.createElement("div"); overlay.className="overlay";
+  overlay.innerHTML=`<div class="modal" style="width:440px;text-align:center">
+    <div style="font-size:36px;line-height:1;color:var(--module-4);margin-bottom:6px;font-family:Georgia,serif">“</div>
+    <h3 style="letter-spacing:.04em">今日寄语</h3>
+    <p style="font-size:16px;line-height:1.75;color:var(--text);margin:14px 6px 4px;font-weight:600">${text}</p>
+    <div style="font-size:12px;color:var(--text-sub);margin-top:12px">${dateStr()} · 每天首次打开时为你送上</div>
+    <div class="modal-actions" style="justify-content:center;margin-top:22px">
+      <button class="btn" id="motiv-ok">已收到，开始今天</button>
+    </div></div>`;
+  document.body.appendChild(overlay);
+  const close=()=>overlay.remove();
+  overlay.onclick=e=>{ if(e.target===overlay) close(); };
+  const ok=overlay.querySelector("#motiv-ok"); if(ok) ok.onclick=close;
+}
+
 /* ---------- 初始化：异步加载数据 ---------- */
 async function init(){
   data = await store.load();
+  Object.assign(POINT_RULES, data.__pointRules||{}); // 回读用户自定义的积分规则
   data.__trash = data.__trash || [];
   data.__notify = data.__notify || false;
   data.__notifiedDate = data.__notifiedDate || "";
@@ -5037,8 +5157,8 @@ async function init(){
       impFile.value='';
     };
   }
-  // 首次进入展示新手引导（仅一次）
-  if(!data.__onboarded) showOnboarding(0);
+  // 首次进入展示新手引导（仅一次）；已引导过的用户按日期弹每日激励
+  if(!data.__onboarded) showOnboarding(0); else maybeShowDailyMotivation();
 }
 init();
 </script>
